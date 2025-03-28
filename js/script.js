@@ -347,7 +347,7 @@ function animateScore(startScore, endScore) {
     }, duration / steps);
 }
 
-function showGameOver() {
+async function showGameOver() {
     // Save game results if user is logged in and userManager exists
     if (window.userManager?.currentUser) {
         const gameResults = [];
@@ -364,9 +364,14 @@ function showGameOver() {
             }
         });
         
-        // Update streak before saving game result
-        window.userManager.updateStreak();
-        window.userManager.saveGameResult(currentCategory, currentScore, gameResults);
+        try {
+            // First update the streak
+            await window.userManager.updateStreak();
+            // Then save the game result
+            await window.userManager.saveGameResult(currentCategory, currentScore, gameResults);
+        } catch (error) {
+            console.error('Error updating streak or saving game:', error);
+        }
     }
 
     // Create game over div if it doesn't exist

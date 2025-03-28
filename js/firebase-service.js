@@ -335,8 +335,7 @@ class FirebaseUserManager {
             // Step 1: Update basic stats
             await userRef.update({
                 'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
-                'stats.highScore': Math.max(currentData.stats?.highScore || 0, score),
-                'lastPlayedDate': new Date().toLocaleDateString()
+                'stats.highScore': Math.max(currentData.stats?.highScore || 0, score)
             });
 
             // Step 2: Update category stats
@@ -351,29 +350,7 @@ class FirebaseUserManager {
             );
             await userRef.update(categoryUpdate);
 
-            // Step 3: Update streak
-            let newStreak = 1;
-            if (currentData.lastPlayedDate) {
-                const lastPlayed = new Date(currentData.lastPlayedDate);
-                const currentDate = new Date();
-                lastPlayed.setHours(0, 0, 0, 0);
-                currentDate.setHours(0, 0, 0, 0);
-                const diffDays = Math.floor((currentDate - lastPlayed) / (1000 * 60 * 60 * 24));
-
-                if (diffDays === 1) {
-                    newStreak = (currentData.stats?.currentStreak || 0) + 1;
-                } else if (diffDays === 0) {
-                    newStreak = currentData.stats?.currentStreak || 1;
-                }
-            }
-            const newBestStreak = Math.max(currentData.stats?.bestStreak || 0, newStreak);
-            
-            await userRef.update({
-                'stats.currentStreak': newStreak,
-                'stats.bestStreak': newBestStreak
-            });
-
-            // Step 4: Update game history
+            // Step 3: Update game history
             await userRef.update({
                 'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult)
             });
@@ -493,6 +470,14 @@ class FirebaseUserManager {
             const currentDate = new Date();
             currentDate.setHours(0, 0, 0, 0);
             
+            // Debug logs
+            console.log('Debug - Streak Calculation:', {
+                currentDate: currentDate.toISOString(),
+                lastPlayedDate: userData.lastPlayedDate,
+                currentStreak: userData.stats?.currentStreak,
+                bestStreak: userData.stats?.bestStreak
+            });
+            
             if (!userData.lastPlayedDate) {
                 // First time playing
                 userData.stats = userData.stats || {};
@@ -505,16 +490,29 @@ class FirebaseUserManager {
                 const diffTime = currentDate - lastPlayed;
                 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
+                // More debug logs
+                console.log('Debug - Day Difference:', {
+                    lastPlayed: lastPlayed.toISOString(),
+                    diffDays,
+                    diffTime
+                });
+
                 if (diffDays === 1) {
                     // Consecutive day
                     userData.stats.currentStreak = (userData.stats?.currentStreak || 0) + 1;
                     userData.stats.bestStreak = Math.max(userData.stats.currentStreak, userData.stats?.bestStreak || 0);
+                    console.log('Debug - Consecutive day detected:', {
+                        newStreak: userData.stats.currentStreak,
+                        newBestStreak: userData.stats.bestStreak
+                    });
                 } else if (diffDays === 0) {
                     // Same day, keep current streak
                     userData.stats.currentStreak = userData.stats?.currentStreak || 1;
+                    console.log('Debug - Same day detected, keeping streak:', userData.stats.currentStreak);
                 } else {
                     // More than one day gap, reset streak
                     userData.stats.currentStreak = 1;
+                    console.log('Debug - Gap detected, resetting streak');
                 }
             }
 
