@@ -65,6 +65,11 @@ function initializeDOMElements() {
         const tutorialModal = document.getElementById('tutorial-modal');
         if (!tutorialModal) return;
         
+        // Remove any existing overlays first
+        const existingOverlays = document.querySelectorAll('.overlay');
+        existingOverlays.forEach(overlay => overlay.remove());
+        
+        // Create new overlay
         const overlay = document.createElement('div');
         overlay.className = 'overlay active';
         document.body.appendChild(overlay);
@@ -101,10 +106,60 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Game data not found');
         return;
     }
+
+    // Initialize welcome modal handlers
+    initializeWelcomeModal();
     
-    // Then initialize DOM elements
+    // Initialize DOM elements (but don't show game yet)
     initializeDOMElements();
 });
+
+function initializeWelcomeModal() {
+    const welcomeModal = document.getElementById('welcome-modal');
+    const gameContainer = document.querySelector('.game-container');
+    const playAsGuestBtn = document.getElementById('play-as-guest');
+    const welcomeLoginBtn = document.getElementById('welcome-login');
+
+    // Show welcome modal by default
+    welcomeModal.classList.remove('hidden');
+
+    // Handle guest play
+    playAsGuestBtn?.addEventListener('click', () => {
+        welcomeModal.classList.add('hidden');
+        gameContainer.classList.add('visible');
+        
+        // Set up guest mode
+        if (window.userManager) {
+            window.userManager.playAsGuest();
+        }
+        
+        // Update UI for guest mode
+        const profileToggle = document.getElementById('profile-toggle');
+        const usernameDisplay = document.getElementById('username-display');
+        if (profileToggle) profileToggle.innerHTML = '<i class="fas fa-user"></i> Guest';
+        if (usernameDisplay) usernameDisplay.textContent = 'Guest';
+    });
+
+    // Handle login choice
+    welcomeLoginBtn?.addEventListener('click', () => {
+        welcomeModal.classList.add('hidden');
+        const loginModal = document.getElementById('login-modal');
+        if (loginModal) {
+            loginModal.classList.remove('hidden');
+            // Add overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            document.body.appendChild(overlay);
+
+            // Close login modal and show welcome modal if overlay is clicked
+            overlay.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+                overlay.remove();
+                welcomeModal.classList.remove('hidden');
+            });
+        }
+    });
+}
 
 function initializeTiles() {
     const tilesWrapper = document.querySelector('.tiles-wrapper');
