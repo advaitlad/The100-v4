@@ -900,7 +900,7 @@ async function handleCategorySelection(category) {
                     <div class="warning-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <h2>Login Required <span class="info-icon" style="display: inline-block; font-size: 16px; margin-left: 8px; cursor: help; color: #6b7280;"><i class="fas fa-info-circle"></i></span></h2>
+                    <h2>Login Required <span class="info-icon" style="display: inline-block; font-size: 16px; margin-left: 8px; cursor: help; color: #6b7280; position: relative; top: -2px;"><i class="fas fa-info-circle"></i></span></h2>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
@@ -959,9 +959,9 @@ async function handleCategorySelection(category) {
                 .info-icon::after {
                     content: 'This category is available for registered users only. Create an account or log in to unlock all categories 🎮';
                     position: absolute;
-                    left: 50%;
-                    top: -10px;
-                    transform: translateX(-50%) translateY(-100%);
+                    left: calc(100% + 12px);
+                    top: 50%;
+                    transform: translateY(-50%);
                     background: #1a1a1a;
                     color: #fff;
                     padding: 8px 12px;
@@ -984,9 +984,9 @@ async function handleCategorySelection(category) {
                 .info-icon::before {
                     content: '';
                     position: absolute;
-                    left: 50%;
-                    top: -10px;
-                    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+                    left: calc(100% + 8px);
+                    top: 50%;
+                    transform: translateY(-50%) rotate(45deg);
                     width: 8px;
                     height: 8px;
                     background: #1a1a1a;
