@@ -957,27 +957,28 @@ async function handleCategorySelection(category) {
             .info-icon:hover::after {
                 content: 'This category is available for registered users only. Create an account or log in to unlock all categories 🎮';
                 position: absolute;
-                right: calc(100% + 10px);
+                left: calc(100% + 10px);
                 top: 50%;
                 transform: translateY(-50%);
                 background: #1a1a1a;
                 color: #fff;
                 padding: 8px 12px;
                 border-radius: 6px;
-                font-size: 0.75em;
+                font-size: 0.7em;
                 width: max-content;
-                max-width: 250px;
+                max-width: 200px;
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
                 z-index: 1002;
                 text-align: left;
                 line-height: 1.4;
                 font-weight: normal;
+                white-space: normal;
             }
 
             .info-icon:hover::before {
                 content: '';
                 position: absolute;
-                right: calc(100% + 4px);
+                left: calc(100% + 4px);
                 top: 50%;
                 transform: translateY(-50%) rotate(45deg);
                 width: 8px;
