@@ -900,8 +900,7 @@ async function handleCategorySelection(category) {
                     <div class="warning-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <h2>Login Required</h2>
-                    <p style="text-align: justify;">This category is available for registered users only. Create an account or log in to unlock all categories 🎮</p>
+                    <h2>Login Required <i class="fas fa-info-circle" style="font-size: 0.8em; margin-left: 5px; cursor: help;" title="This category is available for registered users only. Create an account or log in to unlock all categories 🎮"></i></h2>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
