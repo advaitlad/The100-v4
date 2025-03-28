@@ -650,7 +650,7 @@ function initializeCategoriesList() {
     const isGuest = !window.userManager?.currentUser;
 
     Object.entries(gameCategories).forEach(([key, category]) => {
-        const item = createCategoryItem(category, !freeCategories.includes(key) && isGuest);
+        const item = createCategoryItem(key, category, !freeCategories.includes(key) && isGuest);
         item.setAttribute('tabindex', '0');
 
         item.addEventListener('click', () => {
@@ -663,7 +663,7 @@ function initializeCategoriesList() {
     });
 }
 
-function createCategoryItem(category, isLocked = false) {
+function createCategoryItem(categoryKey, category, isLocked = false) {
     const item = document.createElement('div');
     item.className = `category-item${isLocked ? ' locked' : ''}`;
     
@@ -672,10 +672,17 @@ function createCategoryItem(category, isLocked = false) {
     
     const icon = document.createElement('div');
     icon.className = 'icon';
-    icon.innerHTML = '<i class="fas fa-globe"></i>';
+    
+    // Set icon based on category
+    let iconClass = 'fa-globe';
+    if (categoryKey === 'instagram') iconClass = 'fa-instagram';
+    else if (categoryKey === 'spotify') iconClass = 'fa-spotify';
+    else if (categoryKey === 'population') iconClass = 'fa-users';
+    
+    icon.innerHTML = `<i class="fab ${iconClass}"></i>`;
     
     const title = document.createElement('h3');
-    title.textContent = category.name || category;
+    title.textContent = category.title;
     
     info.appendChild(icon);
     info.appendChild(title);
