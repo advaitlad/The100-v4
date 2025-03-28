@@ -490,27 +490,36 @@ class FirebaseUserManager {
             const userDoc = await transaction.get(userRef);
             const userData = userDoc.data();
             
-            const today = new Date().toLocaleDateString();
+            const currentDate = new Date();
+            currentDate.setHours(0, 0, 0, 0);
             
             if (!userData.lastPlayedDate) {
-                userData.lastPlayedDate = today;
-                userData.currentStreak = 1;
-                userData.bestStreak = 1;
+                // First time playing
+                userData.stats = userData.stats || {};
+                userData.stats.currentStreak = 1;
+                userData.stats.bestStreak = 1;
             } else {
                 const lastPlayed = new Date(userData.lastPlayedDate);
-                const currentDate = new Date();
-                const diffTime = Math.abs(currentDate - lastPlayed);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                lastPlayed.setHours(0, 0, 0, 0);
+                
+                const diffTime = currentDate - lastPlayed;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
                 if (diffDays === 1) {
-                    userData.currentStreak++;
-                    userData.bestStreak = Math.max(userData.currentStreak, userData.bestStreak);
-                } else if (diffDays > 1) {
-                    userData.currentStreak = 1;
+                    // Consecutive day
+                    userData.stats.currentStreak = (userData.stats?.currentStreak || 0) + 1;
+                    userData.stats.bestStreak = Math.max(userData.stats.currentStreak, userData.stats?.bestStreak || 0);
+                } else if (diffDays === 0) {
+                    // Same day, keep current streak
+                    userData.stats.currentStreak = userData.stats?.currentStreak || 1;
+                } else {
+                    // More than one day gap, reset streak
+                    userData.stats.currentStreak = 1;
                 }
             }
 
-            userData.lastPlayedDate = today;
+            // Store date as ISO string for consistent formatting
+            userData.lastPlayedDate = currentDate.toISOString();
             transaction.update(userRef, userData);
         });
 
