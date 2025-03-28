@@ -1,3 +1,35 @@
+function createCategoryItem(category, isLocked = false) {
+    const item = document.createElement('div');
+    item.className = `category-item${isLocked ? ' locked' : ''}`;
+    
+    const info = document.createElement('div');
+    info.className = 'info';
+    
+    const infoHeader = document.createElement('div');
+    infoHeader.className = 'info-header';
+    
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.innerHTML = '<i class="fas fa-globe"></i>';
+    
+    const title = document.createElement('h3');
+    title.textContent = category.name || category;
+    
+    infoHeader.appendChild(icon);
+    infoHeader.appendChild(title);
+    info.appendChild(infoHeader);
+    
+    if (isLocked) {
+        const loginRequired = document.createElement('div');
+        loginRequired.className = 'login-required';
+        loginRequired.innerHTML = '<i class="fas fa-lock"></i> Login Required';
+        info.appendChild(loginRequired);
+    }
+    
+    item.appendChild(info);
+    return item;
+}
+
 // Use the categories data from the external file
 const gameCategories = window.gameData;
 
