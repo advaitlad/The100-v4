@@ -879,11 +879,11 @@ function handleCategorySelection(category) {
     if (isGameInProgress()) {
         showConfirmationDialog((confirmed) => {
             if (confirmed) {
-                selectCategory(category);
+                switchCategory(category);
             }
         });
     } else {
-        selectCategory(category);
+        switchCategory(category);
     }
 }
 

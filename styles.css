@@ -1265,8 +1265,8 @@ button:hover {
 }
 
 .category-item.locked {
-    opacity: 1;
-    background-color: rgba(248, 249, 250, 0.8);
+    background-color: #F8F9FA;
+    pointer-events: auto;
 }
 
 .category-item.locked h3 {
@@ -1274,7 +1274,7 @@ button:hover {
 }
 
 .category-item.locked:hover {
-    background-color: rgba(248, 249, 250, 0.9);
+    background-color: #F1F3F5;
 }
 
 .login-required {
