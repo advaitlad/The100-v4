@@ -1229,8 +1229,8 @@ button:hover {
 
 .category-item .info {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .category-item .info h3 {
@@ -1238,33 +1238,44 @@ button:hover {
     font-size: 1.1em;
     color: #1e293b;
     line-height: 1.4;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    flex: 1;
 }
 
 .category-item .icon {
-    font-size: 1.2em;
-    color: #4b5563;
     width: 24px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+}
+
+.category-item .icon .custom-icon {
+    width: 24px;
+    height: 24px;
+    fill: #4475f1;
 }
 
 .category-item.locked {
     background: #f8fafc;
-    position: relative;
     opacity: 0.9;
 }
 
-.category-item.locked .icon {
-    color: #94a3b8;
+.category-item.locked .info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 .category-item.locked .info h3 {
     color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.category-item.locked .icon .custom-icon {
+    fill: #94a3b8;
 }
 
 .category-item.locked .login-required-label {
@@ -1276,7 +1287,7 @@ button:hover {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-left: 36px;
+    margin-left: 40px;
 }
 
 .category-item.locked .login-required-label::before {
@@ -1297,12 +1308,8 @@ button:hover {
     background: rgba(59, 130, 246, 0.15);
 }
 
-.category-item:hover,
-.category-item.keyboard-selected {
+.category-item:hover {
     background: #f8fafc;
-    border-color: #3b82f6;
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 .category-item.active {
