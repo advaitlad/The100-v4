@@ -289,29 +289,34 @@ class FirebaseUserManager {
         try {
             // First get the current user data
             const userDoc = await userRef.get();
+            if (!userDoc.exists) {
+                console.error('User document does not exist');
+                return;
+            }
             const currentData = userDoc.data();
             
-            // Initialize category stats if they don't exist
-            if (!currentData.stats.categoryStats) {
-                await userRef.update({
-                    'stats.categoryStats': {}
-                });
-            }
-            
-            if (!currentData.stats.categoryStats[category]) {
-                await userRef.update({
-                    [`stats.categoryStats.${category}`]: {
-                        gamesPlayed: 0,
-                        highScore: 0
-                    }
-                });
-            }
+            // Step 1: Update basic stats
+            await userRef.update({
+                'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
+                'stats.highScore': Math.max(currentData.stats?.highScore || 0, score),
+                'lastPlayedDate': new Date().toLocaleDateString()
+            });
 
-            // Calculate streaks
+            // Step 2: Update category stats
+            const categoryUpdate = {};
+            if (!currentData.stats?.categoryStats) {
+                categoryUpdate['stats.categoryStats'] = {};
+            }
+            categoryUpdate[`stats.categoryStats.${category}.gamesPlayed`] = firebase.firestore.FieldValue.increment(1);
+            categoryUpdate[`stats.categoryStats.${category}.highScore`] = Math.max(
+                currentData.stats?.categoryStats?.[category]?.highScore || 0,
+                score
+            );
+            await userRef.update(categoryUpdate);
+
+            // Step 3: Update streak
             let newStreak = 1;
-            let newBestStreak = currentData?.stats?.bestStreak || 0;
-
-            if (currentData?.lastPlayedDate) {
+            if (currentData.lastPlayedDate) {
                 const lastPlayed = new Date(currentData.lastPlayedDate);
                 const currentDate = new Date();
                 lastPlayed.setHours(0, 0, 0, 0);
@@ -319,33 +324,33 @@ class FirebaseUserManager {
                 const diffDays = Math.floor((currentDate - lastPlayed) / (1000 * 60 * 60 * 24));
 
                 if (diffDays === 1) {
-                    newStreak = (currentData.stats.currentStreak || 0) + 1;
+                    newStreak = (currentData.stats?.currentStreak || 0) + 1;
                 } else if (diffDays === 0) {
-                    newStreak = currentData.stats.currentStreak || 1;
+                    newStreak = currentData.stats?.currentStreak || 1;
                 }
             }
-
-            newBestStreak = Math.max(newBestStreak, newStreak);
-
-            // Update all stats
+            const newBestStreak = Math.max(currentData.stats?.bestStreak || 0, newStreak);
+            
             await userRef.update({
-                'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
-                'stats.highScore': Math.max(currentData.stats.highScore || 0, score),
-                [`stats.categoryStats.${category}.gamesPlayed`]: firebase.firestore.FieldValue.increment(1),
-                [`stats.categoryStats.${category}.highScore`]: Math.max(currentData.stats.categoryStats?.[category]?.highScore || 0, score),
-                'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult),
-                'lastPlayedDate': new Date().toLocaleDateString(),
                 'stats.currentStreak': newStreak,
                 'stats.bestStreak': newBestStreak
             });
 
-            // Reload user data
+            // Step 4: Update game history
+            await userRef.update({
+                'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult)
+            });
+
+            // Finally, reload user data
             const updatedDoc = await userRef.get();
             this.userData = updatedDoc.data();
             this.updateUI();
+
         } catch (error) {
             console.error('Error saving game result:', {
                 error,
+                errorCode: error.code,
+                errorMessage: error.message,
                 category,
                 score,
                 userId: this.currentUser.uid
