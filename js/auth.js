@@ -105,24 +105,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const identifier = document.getElementById('login-identifier').value.trim();
         const password = document.getElementById('login-password').value;
         const loginError = document.getElementById('login-error');
+        const loginButton = loginForm.querySelector('button[type="submit"]');
+
+        // Disable the login button and show loading state
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        }
+
+        // Hide any previous error messages
+        if (loginError) {
+            loginError.classList.add('hidden');
+            loginError.textContent = '';
+        }
 
         try {
             await window.userManager.login(identifier, password);
+            
+            // Login successful
             loginModal?.classList.add('hidden');
             loginForm.reset();
             const overlay = document.querySelector('.overlay');
             if (overlay) overlay.remove();
             
-            // Hide any previous error messages
-            loginError.classList.add('hidden');
-            loginError.textContent = '';
         } catch (error) {
             console.error('Login error:', error);
-            loginError.textContent = error.message || 'Error logging in. Please try again.';
-            loginError.classList.remove('hidden');
+            
+            // Show error message
+            if (loginError) {
+                loginError.textContent = error.message || 'Error logging in. Please try again.';
+                loginError.classList.remove('hidden');
+            }
             
             // Clear password field but keep the identifier
             document.getElementById('login-password').value = '';
+        } finally {
+            // Re-enable the login button and restore its text
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Login';
+            }
         }
     });
 

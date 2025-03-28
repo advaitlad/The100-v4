@@ -166,7 +166,7 @@ class FirebaseUserManager {
 
     async login(identifier, password) {
         try {
-            console.log('Attempting login with identifier:', identifier);
+            console.log('Starting login process with identifier:', identifier);
             let email = identifier;
             
             // If identifier doesn't look like an email, treat it as a username
@@ -175,24 +175,28 @@ class FirebaseUserManager {
                 try {
                     // Query Firestore to get the email for this username
                     const usersRef = this.db.collection('users');
-                    const querySnapshot = await usersRef.where('username', '==', identifier).get();
+                    const querySnapshot = await usersRef
+                        .where('username', '==', identifier.toLowerCase().trim())
+                        .get();
                     
                     if (querySnapshot.empty) {
                         console.log('No user found with username:', identifier);
-                        throw { code: 'auth/user-not-found', message: 'No account found with this username.' };
+                        throw new Error('Invalid username or password.');
                     }
                     
                     email = querySnapshot.docs[0].data().email;
                     console.log('Found email for username:', email);
                 } catch (error) {
                     console.error('Error during username lookup:', error);
-                    throw { code: 'auth/user-not-found', message: 'Invalid username or password.' };
+                    throw new Error('Invalid username or password.');
                 }
             }
             
             // Now login with email
             console.log('Attempting login with email:', email);
             const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+            console.log('Login successful, user:', userCredential.user.uid);
+            
             this.currentUser = userCredential.user;
             
             // Update last login time
@@ -202,19 +206,28 @@ class FirebaseUserManager {
                 }).catch(error => {
                     console.warn('Failed to update last login time:', error);
                 });
+                
+                // Load user data
+                await this.loadUserData();
             }
             
-            await this.loadUserData();
             return true;
         } catch (error) {
             console.error('Login error:', error);
+            
             // Handle specific error cases
-            if (error.code === 'auth/invalid-login-credentials' || 
-                error.code === 'auth/wrong-password' || 
-                error.code === 'auth/user-not-found') {
-                throw { code: error.code, message: 'Invalid username/email or password.' };
+            if (error.code === 'auth/wrong-password' || 
+                error.code === 'auth/user-not-found' ||
+                error.code === 'auth/invalid-login-credentials') {
+                throw new Error('Invalid username/email or password.');
+            } else if (error.code === 'auth/too-many-requests') {
+                throw new Error('Too many failed attempts. Please try again later.');
+            } else if (error.code === 'auth/invalid-email') {
+                throw new Error('Invalid email format.');
             }
-            throw { code: error.code, message: error.message || 'Error during login. Please try again.' };
+            
+            // For any other errors
+            throw new Error(error.message || 'Error during login. Please try again.');
         }
     }
 
