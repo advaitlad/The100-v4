@@ -935,9 +935,72 @@ async function handleCategorySelection(category) {
         return;
     }
 
-    // If a game is in progress, show confirmation dialog
+    // If a game is in progress, show custom confirmation dialog
     if (isGameInProgress() && currentCategory !== category) {
-        if (!confirm('Starting a new category will reset your current game. Continue?')) {
+        // Remove any existing modals first
+        removeAllModals();
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.style.zIndex = '1000';
+
+        // Create confirmation modal
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'confirm-modal';
+        confirmModal.style.zIndex = '1001';
+        confirmModal.innerHTML = `
+            <div class="confirm-content">
+                <div class="modal-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>Switch Category?</h2>
+                    <p>Starting a new category will reset your current game progress.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel">
+                        <i class="fas fa-times"></i>
+                        No, Continue Playing
+                    </button>
+                    <button class="modal-btn confirm">
+                        <i class="fas fa-check"></i>
+                        Yes, Switch Category
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(confirmModal);
+
+        // Create a promise to handle the user's choice
+        const userChoice = new Promise((resolve) => {
+            const cancelBtn = confirmModal.querySelector('.cancel');
+            const confirmBtn = confirmModal.querySelector('.confirm');
+
+            const closeModal = (result) => {
+                removeAllModals();
+                resolve(result);
+            };
+
+            cancelBtn.addEventListener('click', () => closeModal(false));
+            confirmBtn.addEventListener('click', () => closeModal(true));
+            overlay.addEventListener('click', () => closeModal(false));
+
+            // Add keyboard support
+            const handleKeydown = (e) => {
+                if (e.key === 'Escape') {
+                    closeModal(false);
+                    document.removeEventListener('keydown', handleKeydown);
+                }
+            };
+            document.addEventListener('keydown', handleKeydown);
+        });
+
+        // Wait for user's choice
+        const shouldSwitch = await userChoice;
+        if (!shouldSwitch) {
             return;
         }
     }
