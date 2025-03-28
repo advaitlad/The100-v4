@@ -770,4 +770,32 @@ function closeTutorialModal() {
     if (overlay) overlay.remove();
     // Reset scroll position
     tutorialModal.scrollTop = 0;
-} 
+}
+
+// Add event listener for game reset
+document.addEventListener('resetGame', () => {
+    // Reset game state
+    currentScore = 0;
+    chancesLeft = 5;
+    guessedCountries = [];
+    
+    // Update score and chances display
+    const scoreSpan = document.getElementById('score');
+    const chanceSpan = document.getElementById('chances');
+    if (scoreSpan) scoreSpan.textContent = '0';
+    if (chanceSpan) chanceSpan.textContent = '5';
+    
+    // Clear guesses list
+    const guessesList = document.getElementById('guesses-list');
+    if (guessesList) guessesList.innerHTML = '';
+    
+    // Reset tiles
+    const tilesWrapper = document.querySelector('.tiles-wrapper');
+    if (tilesWrapper) {
+        const tiles = tilesWrapper.querySelectorAll('.country-tile');
+        tiles.forEach(tile => {
+            tile.classList.remove('revealed');
+            tile.classList.remove('success-animation');
+        });
+    }
+}); 

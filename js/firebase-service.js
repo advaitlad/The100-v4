@@ -68,20 +68,61 @@ class FirebaseUserManager {
 
     async signup(email, password, username) {
         try {
-            // First check if username is already taken
-            const usernameQuery = await this.db.collection('users')
-                .where('username', '==', username)
-                .get();
+            console.log('Starting signup process...', { email, username });
             
-            if (!usernameQuery.empty) {
-                throw { code: 'username-taken', message: 'This username is already taken' };
+            // Check if Firebase is properly initialized
+            if (!this.auth || !this.db) {
+                console.error('Firebase not properly initialized:', { 
+                    auth: !!this.auth, 
+                    db: !!this.db 
+                });
+                throw new Error('Firebase initialization error');
             }
 
-            // Create auth user
-            const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
+            // Create auth user first
+            console.log('Creating auth user...');
+            let userCredential;
+            try {
+                userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+                console.log('User credential created:', userCredential);
+            } catch (authError) {
+                console.error('Auth creation error:', {
+                    code: authError.code,
+                    message: authError.message
+                });
+                throw authError;
+            }
 
-            // Create user document in Firestore with the provided username
+            if (!userCredential || !userCredential.user) {
+                console.error('No user credential created');
+                throw new Error('Failed to create user credential');
+            }
+
+            const user = userCredential.user;
+            console.log('Auth user created:', user.uid);
+
+            // Now check username uniqueness
+            try {
+                const usernameQuery = await this.db.collection('users')
+                    .where('username', '==', username)
+                    .get();
+                
+                if (!usernameQuery.empty) {
+                    // Delete the auth user since username is taken
+                    await user.delete();
+                    throw { code: 'username-taken', message: 'This username is already taken' };
+                }
+            } catch (dbError) {
+                if (dbError.code === 'username-taken') {
+                    throw dbError;
+                }
+                console.error('Error during username check:', dbError);
+                // Delete the auth user if username check fails
+                await user.delete();
+                throw dbError;
+            }
+
+            // Create user document in Firestore
             const userData = {
                 username: username,
                 email: email,
@@ -97,19 +138,52 @@ class FirebaseUserManager {
                 gameHistory: []
             };
 
-            await this.db.collection('users').doc(user.uid).set(userData);
+            try {
+                await this.db.collection('users').doc(user.uid).set(userData);
+                console.log('User document created successfully');
+            } catch (firestoreError) {
+                console.error('Firestore document creation error:', firestoreError);
+                // If Firestore fails, delete the auth user
+                await user.delete().catch(deleteError => {
+                    console.error('Failed to delete auth user after Firestore error:', deleteError);
+                });
+                throw firestoreError;
+            }
+
             this.currentUser = user;
             this.userData = userData;
             this.updateUI();
             return true;
         } catch (error) {
-            console.error('Signup error:', error);
+            console.error('Detailed signup error:', {
+                code: error.code,
+                message: error.message,
+                fullError: error
+            });
             throw error;
         }
     }
 
-    async login(email, password) {
+    async login(identifier, password) {
         try {
+            let email = identifier;
+            
+            // If identifier doesn't look like an email, assume it's a username
+            if (!identifier.includes('@')) {
+                // Query Firestore to get the email for this username
+                const usernameQuery = await this.db.collection('users')
+                    .where('username', '==', identifier)
+                    .limit(1)
+                    .get();
+                
+                if (usernameQuery.empty) {
+                    throw { code: 'auth/user-not-found', message: 'No account found with this username.' };
+                }
+                
+                email = usernameQuery.docs[0].data().email;
+            }
+            
+            // Now login with email
             const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
             this.currentUser = userCredential.user;
             
@@ -118,7 +192,6 @@ class FirebaseUserManager {
                 await this.db.collection('users').doc(this.currentUser.uid).update({
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 }).catch(error => {
-                    // Silently handle Firestore update error
                     console.warn('Failed to update last login time:', error);
                 });
             }
@@ -126,13 +199,12 @@ class FirebaseUserManager {
             await this.loadUserData();
             return true;
         } catch (error) {
-            // Don't log the full error stack to console
+            console.error('Login error:', error);
             if (error.code === 'auth/invalid-login-credentials' || 
                 error.code === 'auth/wrong-password' || 
                 error.code === 'auth/user-not-found') {
-                throw error; // Just throw the error without logging
+                throw error;
             } else {
-                console.error('Unexpected login error:', error);
                 throw error;
             }
         }
@@ -143,11 +215,15 @@ class FirebaseUserManager {
             await this.auth.signOut();
             this.currentUser = null;
             
-            // Update UI elements
+            // Reset UI elements
             const usernameDisplay = document.getElementById('username-display');
             if (usernameDisplay) {
                 usernameDisplay.textContent = 'Guest';
             }
+
+            // Dispatch a custom event to reset game state
+            const resetEvent = new CustomEvent('resetGame');
+            document.dispatchEvent(resetEvent);
             
             return true;
         } catch (error) {

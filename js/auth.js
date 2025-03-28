@@ -102,30 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle login form submission
     loginForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
+        const identifier = document.getElementById('login-identifier').value;
         const password = document.getElementById('login-password').value;
 
         try {
-            await window.userManager.login(email, password);
+            await window.userManager.login(identifier, password);
             loginModal?.classList.add('hidden');
             loginForm.reset();
             const overlay = document.querySelector('.overlay');
             if (overlay) overlay.remove();
         } catch (error) {
-            // Don't log expected errors
-            if (!['auth/invalid-login-credentials', 
-                  'auth/wrong-password', 
-                  'auth/user-not-found'].includes(error.code)) {
-                console.error('Unexpected login error:', error);
-            }
-            
-            // Show user-friendly error message
-            let errorMsg = 'Invalid email or password';
+            let errorMsg = 'Invalid username/email or password';
             switch (error.code) {
                 case 'auth/invalid-login-credentials':
                 case 'auth/wrong-password':
                 case 'auth/user-not-found':
-                    errorMsg = 'Invalid email or password. Please try again.';
+                    errorMsg = 'Invalid username/email or password. Please try again.';
                     break;
                 case 'auth/too-many-requests':
                     errorMsg = 'Too many failed attempts. Please try again later.';
