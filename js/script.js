@@ -865,33 +865,58 @@ function removeAllModals() {
 async function handleCategorySelection(category) {
     // Check if category is locked for guest users
     if (isGuestLockedCategory(category) && (!window.userManager?.currentUser)) {
+        // First, remove any existing modals
+        removeAllModals();
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.style.zIndex = '1000'; // Ensure overlay is on top
+
         // Show login prompt
-        const loginPromptModal = document.createElement('div');
-        loginPromptModal.className = 'modal';
-        loginPromptModal.innerHTML = `
-            <div class="modal-content">
-                <h2>Login Required</h2>
-                <p>This category is only available to registered users. Please log in or create an account to continue.</p>
-                <div class="modal-buttons">
-                    <button class="modal-btn login-btn">Login</button>
-                    <button class="modal-btn cancel-btn">Cancel</button>
+        const loginPrompt = document.createElement('div');
+        loginPrompt.className = 'confirm-modal';
+        loginPrompt.style.zIndex = '1001'; // Ensure modal is above overlay
+        loginPrompt.innerHTML = `
+            <div class="confirm-content">
+                <div class="modal-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h2>Login Required</h2>
+                    <p>This category is available for registered users. Create an account or log in to unlock all categories 🎮</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel">
+                        <i class="fas fa-times"></i>
+                        Maybe Later
+                    </button>
+                    <button class="modal-btn confirm">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login / Sign Up (Free)
+                    </button>
                 </div>
             </div>
         `;
-        document.body.appendChild(loginPromptModal);
 
-        // Add event listeners for the buttons
-        const loginBtn = loginPromptModal.querySelector('.login-btn');
-        const cancelBtn = loginPromptModal.querySelector('.cancel-btn');
+        document.body.appendChild(overlay);
+        document.body.appendChild(loginPrompt);
 
-        loginBtn.addEventListener('click', () => {
-            loginPromptModal.remove();
+        // Add event listeners
+        const cancelBtn = loginPrompt.querySelector('.cancel');
+        const confirmBtn = loginPrompt.querySelector('.confirm');
+
+        const closePrompt = () => {
+            removeAllModals();
+        };
+
+        cancelBtn.addEventListener('click', closePrompt);
+        overlay.addEventListener('click', closePrompt);
+
+        confirmBtn.addEventListener('click', () => {
+            closePrompt();
             document.getElementById('profile-modal').classList.remove('hidden');
             document.querySelector('.overlay').classList.add('active');
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            loginPromptModal.remove();
         });
 
         // Don't close the panel since category didn't change
