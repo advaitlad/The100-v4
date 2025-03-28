@@ -1,35 +1,3 @@
-function createCategoryItem(category, isLocked = false) {
-    const item = document.createElement('div');
-    item.className = `category-item${isLocked ? ' locked' : ''}`;
-    
-    const info = document.createElement('div');
-    info.className = 'info';
-    
-    const infoHeader = document.createElement('div');
-    infoHeader.className = 'info-header';
-    
-    const icon = document.createElement('div');
-    icon.className = 'icon';
-    icon.innerHTML = '<i class="fas fa-globe"></i>';
-    
-    const title = document.createElement('h3');
-    title.textContent = category.name || category;
-    
-    infoHeader.appendChild(icon);
-    infoHeader.appendChild(title);
-    info.appendChild(infoHeader);
-    
-    if (isLocked) {
-        const loginRequired = document.createElement('div');
-        loginRequired.className = 'login-required';
-        loginRequired.innerHTML = '<i class="fas fa-lock"></i> Login Required';
-        info.appendChild(loginRequired);
-    }
-    
-    item.appendChild(info);
-    return item;
-}
-
 // Use the categories data from the external file
 const gameCategories = window.gameData;
 
@@ -682,17 +650,8 @@ function initializeCategoriesList() {
     const isGuest = !window.userManager?.currentUser;
 
     Object.entries(gameCategories).forEach(([key, category]) => {
-        const item = document.createElement('div');
-        item.className = `category-item${key === currentCategory ? ' active' : ''}${!freeCategories.includes(key) && isGuest ? ' locked' : ''}`;
+        const item = createCategoryItem(category, !freeCategories.includes(key) && isGuest);
         item.setAttribute('tabindex', '0');
-        item.innerHTML = `
-            <div class="icon">
-                <i class="fas ${category.icon || 'fa-globe'}"></i>
-            </div>
-            <div class="info">
-                <h3>${category.title}</h3>
-            </div>
-        `;
 
         item.addEventListener('click', () => {
             if (key !== currentCategory) {
@@ -702,6 +661,34 @@ function initializeCategoriesList() {
 
         categoriesContainer.appendChild(item);
     });
+}
+
+function createCategoryItem(category, isLocked = false) {
+    const item = document.createElement('div');
+    item.className = `category-item${isLocked ? ' locked' : ''}`;
+    
+    const info = document.createElement('div');
+    info.className = 'info';
+    
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.innerHTML = '<i class="fas fa-globe"></i>';
+    
+    const title = document.createElement('h3');
+    title.textContent = category.name || category;
+    
+    info.appendChild(icon);
+    info.appendChild(title);
+    
+    if (isLocked) {
+        const loginLabel = document.createElement('div');
+        loginLabel.className = 'login-required-label';
+        loginLabel.textContent = 'Login Required';
+        info.appendChild(loginLabel);
+    }
+    
+    item.appendChild(info);
+    return item;
 }
 
 function filterCategories() {
