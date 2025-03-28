@@ -818,15 +818,19 @@ function handleCategoryKeyboard(e) {
     }
 }
 
+function removeAllModals() {
+    // Remove all modal-related elements
+    document.querySelectorAll('.overlay, .confirm-modal, .confirm-content, .modal-header, .modal-footer, .confirm-dialog').forEach(element => {
+        // If the element is still in the DOM, remove it
+        if (element && element.parentNode) {
+            element.parentNode.removeChild(element);
+        }
+    });
+}
+
 function handleCategorySelection(category) {
-    // First, remove any existing login prompts
-    const existingOverlay = document.querySelector('.overlay');
-    const existingPrompt = document.querySelector('.confirm-modal');
-    const existingContent = document.querySelector('.confirm-content');
-    
-    if (existingOverlay) existingOverlay.remove();
-    if (existingPrompt) existingPrompt.remove();
-    if (existingContent) existingContent.remove();
+    // First, remove any existing login prompts and other modals
+    removeAllModals();
 
     // Check if category is locked for guest users
     const freeCategories = ['area', 'population'];
@@ -836,9 +840,11 @@ function handleCategorySelection(category) {
         // Show login prompt
         const overlay = document.createElement('div');
         overlay.className = 'overlay';
+        overlay.style.zIndex = '1000'; // Ensure overlay is on top
         
         const loginPrompt = document.createElement('div');
         loginPrompt.className = 'confirm-modal';
+        loginPrompt.style.zIndex = '1001'; // Ensure modal is above overlay
         loginPrompt.innerHTML = `
             <div class="confirm-content">
                 <div class="modal-header">
@@ -869,8 +875,7 @@ function handleCategorySelection(category) {
         const confirmBtn = loginPrompt.querySelector('.confirm');
         
         const closePrompt = () => {
-            overlay.remove();
-            loginPrompt.remove();
+            removeAllModals();
         };
         
         cancelBtn.addEventListener('click', closePrompt);
