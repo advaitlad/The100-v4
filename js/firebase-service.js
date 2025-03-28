@@ -463,60 +463,69 @@ class FirebaseUserManager {
         if (!this.currentUser) return;
 
         const userRef = this.db.collection('users').doc(this.currentUser.uid);
+        
         await this.db.runTransaction(async (transaction) => {
-            const userDoc = await transaction.get(userRef);
-            const userData = userDoc.data();
-            
+            const doc = await transaction.get(userRef);
+            if (!doc.exists) return;
+
+            const userData = doc.data();
             const currentDate = new Date();
             currentDate.setHours(0, 0, 0, 0);
-            
-            // Debug logs
-            console.log('Debug - Streak Calculation:', {
-                currentDate: currentDate.toISOString(),
-                lastPlayedDate: userData.lastPlayedDate,
-                currentStreak: userData.stats?.currentStreak,
-                bestStreak: userData.stats?.bestStreak
-            });
-            
+
+            // Initialize stats if they don't exist
+            if (!userData.stats) {
+                userData.stats = {
+                    currentStreak: 1,
+                    bestStreak: 1
+                };
+            }
+
             if (!userData.lastPlayedDate) {
                 // First time playing
-                userData.stats = userData.stats || {};
                 userData.stats.currentStreak = 1;
                 userData.stats.bestStreak = 1;
+                console.log('Debug - First time playing, setting initial streak');
             } else {
-                const lastPlayed = new Date(userData.lastPlayedDate);
+                // Convert stored date string to Date object
+                let lastPlayed = new Date(userData.lastPlayedDate);
                 lastPlayed.setHours(0, 0, 0, 0);
-                
-                const diffTime = currentDate - lastPlayed;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-                // More debug logs
-                console.log('Debug - Day Difference:', {
-                    lastPlayed: lastPlayed.toISOString(),
-                    diffDays,
-                    diffTime
-                });
-
-                if (diffDays === 1) {
-                    // Consecutive day
-                    userData.stats.currentStreak = (userData.stats?.currentStreak || 0) + 1;
-                    userData.stats.bestStreak = Math.max(userData.stats.currentStreak, userData.stats?.bestStreak || 0);
-                    console.log('Debug - Consecutive day detected:', {
-                        newStreak: userData.stats.currentStreak,
-                        newBestStreak: userData.stats.bestStreak
-                    });
-                } else if (diffDays === 0) {
-                    // Same day, keep current streak
-                    userData.stats.currentStreak = userData.stats?.currentStreak || 1;
-                    console.log('Debug - Same day detected, keeping streak:', userData.stats.currentStreak);
-                } else {
-                    // More than one day gap, reset streak
+                if (isNaN(lastPlayed.getTime())) {
+                    console.log('Debug - Invalid last played date, resetting streak');
                     userData.stats.currentStreak = 1;
-                    console.log('Debug - Gap detected, resetting streak');
+                    userData.stats.bestStreak = Math.max(1, userData.stats?.bestStreak || 0);
+                } else {
+                    const diffTime = currentDate.getTime() - lastPlayed.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    console.log('Debug - Day Difference:', {
+                        lastPlayed: lastPlayed.toISOString(),
+                        currentDate: currentDate.toISOString(),
+                        diffDays,
+                        diffTime
+                    });
+
+                    if (diffDays === 1) {
+                        // Consecutive day
+                        userData.stats.currentStreak = (userData.stats?.currentStreak || 0) + 1;
+                        userData.stats.bestStreak = Math.max(userData.stats.currentStreak, userData.stats?.bestStreak || 0);
+                        console.log('Debug - Consecutive day detected:', {
+                            newStreak: userData.stats.currentStreak,
+                            newBestStreak: userData.stats.bestStreak
+                        });
+                    } else if (diffDays === 0) {
+                        // Same day, keep current streak
+                        userData.stats.currentStreak = userData.stats?.currentStreak || 1;
+                        console.log('Debug - Same day detected, keeping streak:', userData.stats.currentStreak);
+                    } else {
+                        // More than one day gap, reset streak
+                        userData.stats.currentStreak = 1;
+                        console.log('Debug - Gap detected, resetting streak');
+                    }
                 }
             }
 
-            // Store date as ISO string for consistent formatting
+            // Store current date as ISO string
             userData.lastPlayedDate = currentDate.toISOString();
             transaction.update(userRef, userData);
         });
