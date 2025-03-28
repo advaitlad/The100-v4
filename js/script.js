@@ -348,31 +348,8 @@ function animateScore(startScore, endScore) {
 }
 
 async function showGameOver() {
-    // Save game results if user is logged in and userManager exists
-    if (window.userManager?.currentUser) {
-        const gameResults = [];
-        // Safely get guesses from the list
-        const guessList = guessesList?.children || [];
-        Array.from(guessList).forEach(li => {
-            const nameSpan = li.querySelector('span:first-child');
-            const scoreSpan = li.querySelector('span:last-child');
-            if (nameSpan && scoreSpan) {
-                gameResults.push({
-                    name: nameSpan.textContent,
-                    score: parseInt(scoreSpan.textContent) || 0
-                });
-            }
-        });
-        
-        try {
-            // First update the streak
-            await window.userManager.updateStreak();
-            // Then save the game result
-            await window.userManager.saveGameResult(currentCategory, currentScore, gameResults);
-        } catch (error) {
-            console.error('Error updating streak or saving game:', error);
-        }
-    }
+    // Wait for the final guess animation to complete (1.5s)
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Create game over div if it doesn't exist
     if (!gameOverDiv) {
@@ -381,7 +358,7 @@ async function showGameOver() {
         document.body.appendChild(gameOverDiv);
     }
 
-    // Set game over content with added Show Answers button and No option
+    // Set game over content immediately
     gameOverDiv.innerHTML = `
         <div class="game-over-header">
             <h2>Game Over!</h2>
@@ -401,20 +378,38 @@ async function showGameOver() {
 
     // Create and show overlay
     const overlay = document.createElement('div');
-    overlay.className = 'overlay';
+    overlay.className = 'overlay active';
     document.body.appendChild(overlay);
 
-    // Show overlay and game over popup
-    setTimeout(() => {
-        overlay.classList.add('active');
-        gameOverDiv.classList.remove('hidden');
-    }, 50);
+    // Show game over popup immediately
+    gameOverDiv.classList.remove('hidden');
 
-    // Add event listeners for buttons
-    const closeBtn = document.querySelector('.close-game-over-btn');
-    const showAnswersBtn = document.querySelector('.show-answers-btn');
-    const playAgainBtn = document.querySelector('.play-again-btn');
-    const noPlayBtn = document.querySelector('.no-play-btn');
+    // Save game results if user is logged in and userManager exists
+    if (window.userManager?.currentUser) {
+        const gameResults = [];
+        // Safely get guesses from the list
+        const guessList = guessesList?.children || [];
+        Array.from(guessList).forEach(li => {
+            const nameSpan = li.querySelector('span:first-child');
+            const scoreSpan = li.querySelector('span:last-child');
+            if (nameSpan && scoreSpan) {
+                gameResults.push({
+                    name: nameSpan.textContent,
+                    score: parseInt(scoreSpan.textContent) || 0
+                });
+            }
+        });
+        
+        try {
+            // Run these operations in parallel since they don't depend on each other
+            await Promise.all([
+                window.userManager.updateStreak(),
+                window.userManager.saveGameResult(currentCategory, currentScore, gameResults)
+            ]);
+        } catch (error) {
+            console.error('Error updating streak or saving game:', error);
+        }
+    }
 
     // Function to handle closing the game over screen
     const closeGameOver = () => {
@@ -436,6 +431,12 @@ async function showGameOver() {
         }
     };
     document.addEventListener('keydown', handleKeydown);
+
+    // Add event listeners for buttons
+    const closeBtn = document.querySelector('.close-game-over-btn');
+    const showAnswersBtn = document.querySelector('.show-answers-btn');
+    const playAgainBtn = document.querySelector('.play-again-btn');
+    const noPlayBtn = document.querySelector('.no-play-btn');
 
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
@@ -466,16 +467,7 @@ async function showGameOver() {
     }
 
     if (noPlayBtn) {
-        noPlayBtn.addEventListener('click', () => {
-            if (overlay && overlay.parentNode) {
-                overlay.remove();
-            }
-            if (gameOverDiv) {
-                gameOverDiv.classList.add('hidden');
-            }
-            // Create floating play again button
-            createFloatingPlayAgainButton();
-        });
+        noPlayBtn.addEventListener('click', closeGameOver);
     }
 }
 
