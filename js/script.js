@@ -451,7 +451,7 @@ async function showGameOver() {
     }
     
     if (showAnswersBtn) {
-        showAnswersBtn.addEventListener('click', showAllAnswers);
+        showAnswersBtn.addEventListener('click', () => showAllAnswers(true));
     }
     
     if (playAgainBtn) {
@@ -477,11 +477,11 @@ async function showGameOver() {
 }
 
 function createFloatingPlayAgainButton() {
-    // Remove existing floating buttons if they exist
-    const existingBtn = document.getElementById('floating-play-again');
-    const existingAnswersBtn = document.getElementById('floating-show-answers');
-    if (existingBtn) existingBtn.remove();
-    if (existingAnswersBtn) existingAnswersBtn.remove();
+    // Remove any existing floating buttons
+    const existingContainer = document.querySelector('.floating-buttons-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
 
     // Create container for floating buttons
     const buttonsContainer = document.createElement('div');
@@ -489,27 +489,21 @@ function createFloatingPlayAgainButton() {
     
     // Create show answers button
     const showAnswersBtn = document.createElement('button');
+    showAnswersBtn.id = 'floating-show-answers';
     showAnswersBtn.className = 'floating-btn show-answers-btn';
     showAnswersBtn.innerHTML = '<i class="fas fa-list"></i> Show Answers';
     
     // Create play again button
     const playAgainBtn = document.createElement('button');
+    playAgainBtn.id = 'floating-play-again';
     playAgainBtn.className = 'floating-btn play-again-btn';
     playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> Play Again';
     
     // Add click events
     showAnswersBtn.addEventListener('click', () => {
-        showAllAnswers();
-        // After showing answers, when closed, recreate the floating buttons
-        const closeAnswersBtn = document.getElementById('close-answers');
-        if (closeAnswersBtn) {
-            const originalClickHandler = closeAnswersBtn.onclick;
-            closeAnswersBtn.onclick = () => {
-                if (originalClickHandler) originalClickHandler();
-                createFloatingPlayAgainButton();
-            };
-        }
+        // Remove the floating buttons before showing answers
         buttonsContainer.remove();
+        showAllAnswers(false); // Explicitly pass false to indicate not from game over
     });
     
     playAgainBtn.addEventListener('click', () => {
@@ -525,7 +519,7 @@ function createFloatingPlayAgainButton() {
     document.body.appendChild(buttonsContainer);
 }
 
-function showAllAnswers() {
+function showAllAnswers(fromGameOver = false) {
     // Hide game over screen
     if (gameOverDiv) {
         gameOverDiv.classList.add('hidden');
@@ -575,8 +569,15 @@ function showAllAnswers() {
         if (answersModal && answersModal.parentNode) {
             answersModal.remove();
         }
-        if (gameOverDiv) {
+        if (fromGameOver && gameOverDiv) {
+            // If we came from game over, show it again
             gameOverDiv.classList.remove('hidden');
+            const gameOverOverlay = document.createElement('div');
+            gameOverOverlay.className = 'overlay active';
+            document.body.appendChild(gameOverOverlay);
+        } else {
+            // If we came from floating buttons, recreate them
+            createFloatingPlayAgainButton();
         }
     };
     
