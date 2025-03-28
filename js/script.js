@@ -959,9 +959,9 @@ async function handleCategorySelection(category) {
                 .info-icon::after {
                     content: 'This category is available for registered users only. Create an account or log in to unlock all categories 🎮';
                     position: absolute;
-                    right: 24px;
-                    top: 50%;
-                    transform: translateY(-50%);
+                    left: 50%;
+                    top: -10px;
+                    transform: translateX(-50%) translateY(-100%);
                     background: #1a1a1a;
                     color: #fff;
                     padding: 8px 12px;
@@ -984,9 +984,9 @@ async function handleCategorySelection(category) {
                 .info-icon::before {
                     content: '';
                     position: absolute;
-                    right: 20px;
-                    top: 50%;
-                    transform: translateY(-50%) rotate(45deg);
+                    left: 50%;
+                    top: -10px;
+                    transform: translateX(-50%) translateY(-50%) rotate(45deg);
                     width: 8px;
                     height: 8px;
                     background: #1a1a1a;
