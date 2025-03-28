@@ -1270,11 +1270,11 @@ button:hover {
 }
 
 .category-item.locked h3 {
-    color: #6C757D;
+    color: #6c757d;
 }
 
 .category-item.locked:hover {
-    background-color: #F1F3F5;
+    background-color: #E9ECEF;
 }
 
 .login-required {
