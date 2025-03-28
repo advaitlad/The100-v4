@@ -443,25 +443,54 @@ function showGameOver() {
 }
 
 function createFloatingPlayAgainButton() {
-    // Remove existing floating button if it exists
+    // Remove existing floating buttons if they exist
     const existingBtn = document.getElementById('floating-play-again');
-    if (existingBtn) {
-        existingBtn.remove();
-    }
+    const existingAnswersBtn = document.getElementById('floating-show-answers');
+    if (existingBtn) existingBtn.remove();
+    if (existingAnswersBtn) existingAnswersBtn.remove();
 
-    // Create new floating button
-    const floatingBtn = document.createElement('button');
-    floatingBtn.id = 'floating-play-again';
-    floatingBtn.className = 'floating-play-btn';
-    floatingBtn.innerHTML = '<i class="fas fa-redo"></i> Play Again';
+    // Create container for floating buttons
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'floating-buttons-container';
     
-    // Add click event
-    floatingBtn.addEventListener('click', () => {
-        floatingBtn.remove();
+    // Create show answers button
+    const showAnswersBtn = document.createElement('button');
+    showAnswersBtn.id = 'floating-show-answers';
+    showAnswersBtn.className = 'floating-btn show-answers-btn';
+    showAnswersBtn.innerHTML = '<i class="fas fa-list"></i> Show Answers';
+    
+    // Create play again button
+    const playAgainBtn = document.createElement('button');
+    playAgainBtn.id = 'floating-play-again';
+    playAgainBtn.className = 'floating-btn play-again-btn';
+    playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> Play Again';
+    
+    // Add click events
+    showAnswersBtn.addEventListener('click', () => {
+        showAllAnswers();
+        // After showing answers, when closed, recreate the floating buttons
+        const closeAnswersBtn = document.getElementById('close-answers');
+        if (closeAnswersBtn) {
+            const originalClickHandler = closeAnswersBtn.onclick;
+            closeAnswersBtn.onclick = () => {
+                if (originalClickHandler) originalClickHandler();
+                createFloatingPlayAgainButton();
+            };
+        }
+        buttonsContainer.remove();
+    });
+    
+    playAgainBtn.addEventListener('click', () => {
+        buttonsContainer.remove();
         resetGame();
     });
 
-    document.body.appendChild(floatingBtn);
+    // Add buttons to container
+    buttonsContainer.appendChild(showAnswersBtn);
+    buttonsContainer.appendChild(playAgainBtn);
+
+    // Add container to body
+    document.body.appendChild(buttonsContainer);
 }
 
 function showAllAnswers() {

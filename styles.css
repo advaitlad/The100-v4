@@ -662,12 +662,17 @@ button:hover {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.floating-play-btn {
+.floating-buttons-container {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: #27ae60;
-    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.floating-btn {
     border: none;
     padding: 15px 30px;
     border-radius: 30px;
@@ -678,39 +683,36 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index: 1000;
+    color: white;
 }
 
-.floating-play-btn i {
+.floating-btn i {
     font-size: 1.2em;
 }
 
-.floating-play-btn:hover {
-    background: #219a52;
+.floating-btn:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.floating-play-btn:active {
+.floating-btn:active {
     transform: translateY(0) scale(1);
 }
 
-.show-answers-btn {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    border-radius: 30px;
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.floating-btn.play-again-btn {
+    background: #27ae60;
 }
 
-.show-answers-btn:hover {
+.floating-btn.play-again-btn:hover {
+    background: #219a52;
+}
+
+.floating-btn.show-answers-btn {
+    background: #3498db;
+}
+
+.floating-btn.show-answers-btn:hover {
     background: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .answers-modal {
