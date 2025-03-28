@@ -797,8 +797,8 @@ function handleCategorySelection(category) {
                     <div class="warning-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <h2>Premium Category</h2>
-                    <p>This category is only available for registered users. Sign up or log in to unlock all categories! 🎮</p>
+                    <h2>Login Required</h2>
+                    <p>This category is available for registered users. Create a free account or log in to unlock all categories! No payment required. 🎮</p>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
@@ -807,7 +807,7 @@ function handleCategorySelection(category) {
                     </button>
                     <button class="modal-btn confirm">
                         <i class="fas fa-sign-in-alt"></i>
-                        Login / Sign Up
+                        Login / Sign Up (Free)
                     </button>
                 </div>
             </div>
