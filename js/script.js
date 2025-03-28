@@ -385,9 +385,9 @@ function showGameOver() {
         </div>
         <p class="play-again-text">Want to try again?</p>
         <div class="game-over-buttons">
-            <button class="show-answers-btn">Show Answers</button>
-            <button class="play-again-btn">Yes, Play Again</button>
-            <button class="no-play-btn">No, Thanks</button>
+            <button class="game-over-btn show-answers-btn">Show Answers</button>
+            <button class="game-over-btn play-again-btn">Yes, Play Again</button>
+            <button class="game-over-btn no-play-btn">No, Thanks</button>
         </div>
     `;
 
