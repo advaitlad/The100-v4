@@ -418,9 +418,13 @@ async function showGameOver() {
 
     // Function to handle closing the game over screen
     const closeGameOver = () => {
-        if (overlay && overlay.parentNode) {
-            overlay.remove();
-        }
+        // Remove all overlays
+        document.querySelectorAll('.overlay').forEach(overlay => {
+            if (overlay && overlay.parentNode) {
+                overlay.remove();
+            }
+        });
+        
         if (gameOverDiv) {
             gameOverDiv.classList.add('hidden');
         }
@@ -525,6 +529,13 @@ function showAllAnswers(fromGameOver = false) {
         gameOverDiv.classList.add('hidden');
     }
     
+    // Remove any existing overlays first
+    document.querySelectorAll('.overlay').forEach(overlay => {
+        if (overlay && overlay.parentNode) {
+            overlay.remove();
+        }
+    });
+    
     // Create answers modal
     const answersModal = document.createElement('div');
     answersModal.className = 'answers-modal';
@@ -563,12 +574,17 @@ function showAllAnswers(fromGameOver = false) {
     
     // Function to close answers modal
     const closeAnswersModal = () => {
-        if (overlay && overlay.parentNode) {
-            overlay.remove();
-        }
+        // Remove all overlays first
+        document.querySelectorAll('.overlay').forEach(overlay => {
+            if (overlay && overlay.parentNode) {
+                overlay.remove();
+            }
+        });
+
         if (answersModal && answersModal.parentNode) {
             answersModal.remove();
         }
+
         if (fromGameOver && gameOverDiv) {
             // If we came from game over, show it again
             gameOverDiv.classList.remove('hidden');
