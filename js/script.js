@@ -65,6 +65,17 @@ function initializeDOMElements() {
         const tutorialModal = document.getElementById('tutorial-modal');
         if (!tutorialModal) return;
         
+        // If modal is already visible, close it
+        if (!tutorialModal.classList.contains('hidden')) {
+            closeTutorialModal();
+            return;
+        }
+        
+        // Remove any existing overlays
+        const existingOverlays = document.querySelectorAll('.overlay');
+        existingOverlays.forEach(overlay => overlay.remove());
+        
+        // Create new overlay
         const overlay = document.createElement('div');
         overlay.className = 'overlay active';
         document.body.appendChild(overlay);
