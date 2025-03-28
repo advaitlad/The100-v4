@@ -1366,30 +1366,35 @@ button:hover {
 
 .auth-content {
     position: relative;
-    padding-right: 10px;
 }
 
 .auth-content .close-modal {
     position: absolute;
-    top: -20px;
-    right: -20px;
-    background: rgba(0, 0, 0, 0.1);
+    top: -30px;
+    right: -30px;
+    background: #2c3e50;
+    color: white;
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #2c3e50;
-    font-size: 1.2em;
+    font-size: 16px;
     transition: all 0.3s ease;
+    z-index: 2001;
+    padding: 0;
 }
 
 .auth-content .close-modal:hover {
-    background: rgba(0, 0, 0, 0.2);
+    background: #34495e;
     transform: rotate(90deg);
+}
+
+.auth-content .close-modal i {
+    line-height: 1;
 }
 
 .auth-content h2 {
