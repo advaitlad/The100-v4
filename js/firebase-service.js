@@ -284,51 +284,55 @@ class FirebaseUserManager {
             date: new Date().toISOString()
         };
 
-        // Update user stats
         const userRef = this.db.collection('users').doc(this.currentUser.uid);
         
         try {
-            // First get the current user data to properly calculate the streak
+            // First get the current user data
             const userDoc = await userRef.get();
             const currentData = userDoc.data();
             
-            // Calculate new streak
-            let newStreak = 1; // Playing a game today sets streak to 1
+            // Initialize category stats if they don't exist
+            if (!currentData.stats.categoryStats) {
+                await userRef.update({
+                    'stats.categoryStats': {}
+                });
+            }
+            
+            if (!currentData.stats.categoryStats[category]) {
+                await userRef.update({
+                    [`stats.categoryStats.${category}`]: {
+                        gamesPlayed: 0,
+                        highScore: 0
+                    }
+                });
+            }
+
+            // Calculate streaks
+            let newStreak = 1;
             let newBestStreak = currentData?.stats?.bestStreak || 0;
 
             if (currentData?.lastPlayedDate) {
                 const lastPlayed = new Date(currentData.lastPlayedDate);
                 const currentDate = new Date();
-                
-                // Reset time part to compare just the dates
                 lastPlayed.setHours(0, 0, 0, 0);
                 currentDate.setHours(0, 0, 0, 0);
-                
-                const diffTime = currentDate - lastPlayed;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const diffDays = Math.floor((currentDate - lastPlayed) / (1000 * 60 * 60 * 24));
 
                 if (diffDays === 1) {
-                    // Played consecutive days
                     newStreak = (currentData.stats.currentStreak || 0) + 1;
                 } else if (diffDays === 0) {
-                    // Already played today, keep current streak
                     newStreak = currentData.stats.currentStreak || 1;
-                } else {
-                    // More than one day gap, streak was already reset to 0
-                    // Playing today makes it 1
-                    newStreak = 1;
                 }
             }
 
-            // Update best streak if current streak is higher
             newBestStreak = Math.max(newBestStreak, newStreak);
 
-            // Update all stats at once
+            // Update all stats
             await userRef.update({
                 'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
-                'stats.highScore': Math.max(currentData?.stats?.highScore || 0, score),
+                'stats.highScore': Math.max(currentData.stats.highScore || 0, score),
                 [`stats.categoryStats.${category}.gamesPlayed`]: firebase.firestore.FieldValue.increment(1),
-                [`stats.categoryStats.${category}.highScore`]: Math.max(currentData?.stats?.categoryStats?.[category]?.highScore || 0, score),
+                [`stats.categoryStats.${category}.highScore`]: Math.max(currentData.stats.categoryStats?.[category]?.highScore || 0, score),
                 'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult),
                 'lastPlayedDate': new Date().toLocaleDateString(),
                 'stats.currentStreak': newStreak,
@@ -340,7 +344,12 @@ class FirebaseUserManager {
             this.userData = updatedDoc.data();
             this.updateUI();
         } catch (error) {
-            console.error('Error saving game result:', error);
+            console.error('Error saving game result:', {
+                error,
+                category,
+                score,
+                userId: this.currentUser.uid
+            });
             throw error;
         }
     }
