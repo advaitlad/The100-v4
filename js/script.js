@@ -385,9 +385,9 @@ function showGameOver() {
         </div>
         <p class="play-again-text">Want to try again?</p>
         <div class="game-over-buttons">
-            <button id="show-answers" class="show-answers-btn">Show Answers</button>
-            <button id="play-again" class="play-again-btn">Yes, Play Again</button>
-            <button id="no-play-again" class="no-play-btn">No, Thanks</button>
+            <button class="show-answers-btn">Show Answers</button>
+            <button class="play-again-btn">Yes, Play Again</button>
+            <button class="no-play-btn">No, Thanks</button>
         </div>
     `;
 
@@ -403,9 +403,9 @@ function showGameOver() {
     }, 50);
 
     // Add event listeners for buttons
-    const showAnswersBtn = document.getElementById('show-answers');
-    const playAgainBtn = document.getElementById('play-again');
-    const noPlayBtn = document.getElementById('no-play-again');
+    const showAnswersBtn = document.querySelector('.show-answers-btn');
+    const playAgainBtn = document.querySelector('.play-again-btn');
+    const noPlayBtn = document.querySelector('.no-play-btn');
 
     if (showAnswersBtn) {
         showAnswersBtn.addEventListener('click', showAllAnswers);
@@ -455,13 +455,11 @@ function createFloatingPlayAgainButton() {
     
     // Create show answers button
     const showAnswersBtn = document.createElement('button');
-    showAnswersBtn.id = 'floating-show-answers';
     showAnswersBtn.className = 'floating-btn show-answers-btn';
     showAnswersBtn.innerHTML = '<i class="fas fa-list"></i> Show Answers';
     
     // Create play again button
     const playAgainBtn = document.createElement('button');
-    playAgainBtn.id = 'floating-play-again';
     playAgainBtn.className = 'floating-btn play-again-btn';
     playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> Play Again';
     
