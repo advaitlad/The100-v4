@@ -798,7 +798,7 @@ function handleCategorySelection(category) {
                         <i class="fas fa-lock"></i>
                     </div>
                     <h2>Login Required</h2>
-                    <p>This category is available for registered users. Create a free account or log in to unlock all categories! No payment required. 🎮</p>
+                    <p>This category is available for registered users. Create a account or log in to unlock all categories 🎮</p>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">

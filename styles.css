@@ -1218,17 +1218,36 @@ button:hover {
 }
 
 .category-item {
-    padding: 16px;
-    margin-bottom: 8px;
-    background: #ffffff;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 16px;
-    border: 1px solid transparent;
-    position: relative;
+    justify-content: space-between;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.category-item .info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    /* Allow text truncation */
+}
+
+.category-item .info h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 130px);
+    /* Reserve space for the login label */
 }
 
 .category-item.locked {
@@ -1259,6 +1278,7 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
 }
 
 .category-item.locked::before {
