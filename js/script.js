@@ -383,7 +383,10 @@ async function showGameOver() {
 
     // Set game over content with added Show Answers button and No option
     gameOverDiv.innerHTML = `
-        <h2>Game Over!</h2>
+        <div class="game-over-header">
+            <h2>Game Over!</h2>
+            <button class="close-game-over-btn" aria-label="Close game over screen">&times;</button>
+        </div>
         <div class="final-score-container">
             <div class="final-score-label">FINAL SCORE</div>
             <div class="final-score-value">${currentScore}</div>
@@ -408,10 +411,39 @@ async function showGameOver() {
     }, 50);
 
     // Add event listeners for buttons
+    const closeBtn = document.querySelector('.close-game-over-btn');
     const showAnswersBtn = document.querySelector('.show-answers-btn');
     const playAgainBtn = document.querySelector('.play-again-btn');
     const noPlayBtn = document.querySelector('.no-play-btn');
 
+    // Function to handle closing the game over screen
+    const closeGameOver = () => {
+        if (overlay && overlay.parentNode) {
+            overlay.remove();
+        }
+        if (gameOverDiv) {
+            gameOverDiv.classList.add('hidden');
+        }
+        // Create floating play again button
+        createFloatingPlayAgainButton();
+    };
+
+    // Add keyboard support
+    const handleKeydown = (e) => {
+        if (e.key === 'Escape' && !gameOverDiv.classList.contains('hidden')) {
+            closeGameOver();
+            document.removeEventListener('keydown', handleKeydown);
+        }
+    };
+    document.addEventListener('keydown', handleKeydown);
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeGameOver();
+            document.removeEventListener('keydown', handleKeydown);
+        });
+    }
+    
     if (showAnswersBtn) {
         showAnswersBtn.addEventListener('click', showAllAnswers);
     }
