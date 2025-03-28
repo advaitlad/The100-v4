@@ -674,12 +674,25 @@ function createCategoryItem(categoryKey, category, isLocked = false) {
     icon.className = 'icon';
     
     // Set icon based on category
-    let iconClass = 'fa-globe';
-    if (categoryKey === 'instagram') iconClass = 'fa-instagram';
-    else if (categoryKey === 'spotify') iconClass = 'fa-spotify';
-    else if (categoryKey === 'population') iconClass = 'fa-users';
+    let iconClass;
+    switch(categoryKey) {
+        case 'instagram':
+            iconClass = 'fab fa-instagram';
+            break;
+        case 'spotify':
+            iconClass = 'fab fa-spotify';
+            break;
+        case 'population':
+            iconClass = 'fas fa-users';
+            break;
+        case 'area':
+            iconClass = 'fas fa-globe-americas';
+            break;
+        default:
+            iconClass = 'fas fa-globe';
+    }
     
-    icon.innerHTML = `<i class="fab ${iconClass}"></i>`;
+    icon.innerHTML = `<i class="${iconClass}"></i>`;
     
     const title = document.createElement('h3');
     title.textContent = category.title;

@@ -1229,8 +1229,8 @@ button:hover {
 
 .category-item .info {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .category-item .info h3 {
@@ -1238,6 +1238,19 @@ button:hover {
     font-size: 1.1em;
     color: #1e293b;
     line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.category-item .icon {
+    font-size: 1.2em;
+    color: #4b5563;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .category-item.locked {
@@ -1246,14 +1259,8 @@ button:hover {
     opacity: 0.9;
 }
 
-.category-item.locked .info {
-    flex-direction: column;
-    gap: 8px;
-}
-
 .category-item.locked .icon {
     color: #94a3b8;
-    margin-top: 4px;
 }
 
 .category-item.locked .info h3 {
@@ -1307,29 +1314,6 @@ button:hover {
     background: #f0f9ff;
     border-color: #3b82f6;
     outline: none;
-}
-
-.category-item .icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #3b82f6;
-    font-size: 1.2em;
-    transition: all 0.2s ease;
-}
-
-.category-item:hover .icon {
-    color: #2563eb;
-}
-
-.category-item.active .icon {
-    color: #2563eb;
-}
-
-.category-item .info {
-    flex: 1;
 }
 
 .category-item h3 {
