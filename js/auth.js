@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileToggle = document.getElementById('profile-toggle');
     const profileModal = document.getElementById('profile-modal');
     const closeProfile = document.getElementById('close-profile');
+    const closeLogin = document.getElementById('close-login');
     const logoutButton = document.getElementById('logout-button');
     const usernameDisplay = document.getElementById('username-display');
     const errorModal = document.getElementById('error-modal');
@@ -52,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove the escape key listener
         document.removeEventListener('keydown', escapeKeyListener);
     }
+
+    // Close login modal when X is clicked
+    closeLogin?.addEventListener('click', closeLoginModal);
 
     // Function to handle escape key
     function escapeKeyListener(e) {
