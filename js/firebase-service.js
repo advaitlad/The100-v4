@@ -25,11 +25,6 @@ class FirebaseUserManager {
                         await this.createNewUser();
                     }
                     this.updateUI();
-                    
-                    // Initialize game elements
-                    if (typeof initializeTiles === 'function') {
-                        initializeTiles();
-                    }
                 } catch (error) {
                     console.error('Error loading user data:', error);
                 }
@@ -38,6 +33,14 @@ class FirebaseUserManager {
                 this.currentUser = null;
                 this.userData = null;
                 this.updateUI();
+                
+                // Dispatch resetGame event with preserveTiles flag
+                const resetEvent = new CustomEvent('resetGame', { 
+                    detail: { 
+                        preserveTiles: true 
+                    } 
+                });
+                document.dispatchEvent(resetEvent);
             }
         });
     }

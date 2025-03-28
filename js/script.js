@@ -807,27 +807,9 @@ document.addEventListener('resetGame', (event) => {
     const guessesList = document.getElementById('guesses-list');
     if (guessesList) guessesList.innerHTML = '';
     
-    // Reset tiles
-    const tilesWrapper = document.querySelector('.tiles-wrapper');
-    if (tilesWrapper) {
-        // Clear existing tiles
-        tilesWrapper.innerHTML = '';
-        
-        // Create new tiles with initial state
-        for (let i = 1; i <= 100; i++) {
-            const tile = document.createElement('div');
-            tile.className = 'country-tile';
-            tile.dataset.position = i;
-            tile.innerHTML = `
-                <span class="position">#${i}</span>
-                <span class="name">🔒</span>
-                <span class="area">—</span>
-            `;
-            tilesWrapper.appendChild(tile);
-        }
-        
-        // Reset scroll position
-        tilesWrapper.scrollTop = 0;
+    // Only reinitialize tiles if preserveTiles flag is not set
+    if (!event.detail?.preserveTiles) {
+        initializeTiles();
     }
 
     // Clear input field
