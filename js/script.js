@@ -862,77 +862,73 @@ function removeAllModals() {
     });
 }
 
-function handleCategorySelection(category) {
-    // First, remove any existing login prompts and other modals
-    removeAllModals();
-
+async function handleCategorySelection(category) {
     // Check if category is locked for guest users
-    const freeCategories = ['area', 'population'];
-    const isLocked = !freeCategories.includes(category) && (!window.userManager?.currentUser);
-    
-    if (isLocked) {
+    if (isGuestLockedCategory(category) && (!window.userManager?.currentUser)) {
         // Show login prompt
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-        overlay.style.zIndex = '1000'; // Ensure overlay is on top
-        
-        const loginPrompt = document.createElement('div');
-        loginPrompt.className = 'confirm-modal';
-        loginPrompt.style.zIndex = '1001'; // Ensure modal is above overlay
-        loginPrompt.innerHTML = `
-            <div class="confirm-content">
-                <div class="modal-header">
-                    <div class="warning-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h2>Login Required</h2>
-                    <p>This category is available for registered users. Create a account or log in to unlock all categories 🎮</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn cancel">
-                        <i class="fas fa-times"></i>
-                        Maybe Later
-                    </button>
-                    <button class="modal-btn confirm">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Login / Sign Up (Free)
-                    </button>
+        const loginPromptModal = document.createElement('div');
+        loginPromptModal.className = 'modal';
+        loginPromptModal.innerHTML = `
+            <div class="modal-content">
+                <h2>Login Required</h2>
+                <p>This category is only available to registered users. Please log in or create an account to continue.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn login-btn">Login</button>
+                    <button class="modal-btn cancel-btn">Cancel</button>
                 </div>
             </div>
         `;
-        
-        document.body.appendChild(overlay);
-        document.body.appendChild(loginPrompt);
-        
-        // Add event listeners
-        const cancelBtn = loginPrompt.querySelector('.cancel');
-        const confirmBtn = loginPrompt.querySelector('.confirm');
-        
-        const closePrompt = () => {
-            removeAllModals();
-        };
-        
-        cancelBtn.addEventListener('click', closePrompt);
-        overlay.addEventListener('click', closePrompt);
-        
-        confirmBtn.addEventListener('click', () => {
-            closePrompt();
-            document.getElementById('profile-toggle').click();
+        document.body.appendChild(loginPromptModal);
+
+        // Add event listeners for the buttons
+        const loginBtn = loginPromptModal.querySelector('.login-btn');
+        const cancelBtn = loginPromptModal.querySelector('.cancel-btn');
+
+        loginBtn.addEventListener('click', () => {
+            loginPromptModal.remove();
+            document.getElementById('profile-modal').classList.remove('hidden');
+            document.querySelector('.overlay').classList.add('active');
         });
-        
+
+        cancelBtn.addEventListener('click', () => {
+            loginPromptModal.remove();
+        });
+
+        // Don't close the panel since category didn't change
         return;
     }
 
-    // If category is not locked or user is logged in, proceed with selection
-    if (isGameInProgress()) {
-        showConfirmationDialog((confirmed) => {
-            if (confirmed) {
-                switchCategory(category);
-            }
-        });
-    } else {
-        switchCategory(category);
+    // If it's the same category and not a guest-locked category, no need to do anything
+    if (currentCategory === category) {
+        return;
     }
+
+    // If a game is in progress, show confirmation dialog
+    if (gameInProgress && currentCategory !== category) {
+        if (!confirm('Starting a new category will reset your current game. Continue?')) {
+            return;
+        }
+    }
+
+    // Switch to the selected category
+    await switchCategory(category);
+
+    // Close the category panel since the category actually changed
+    const categoryPanel = document.querySelector('.category-panel');
+    if (categoryPanel && !categoryPanel.classList.contains('hidden')) {
+        categoryPanel.classList.add('hidden');
+        
+        // Also remove active class from the button
+        const categoryButton = document.querySelector('.category-button');
+        if (categoryButton) {
+            categoryButton.classList.remove('active');
+        }
+    }
+}
+
+function isGuestLockedCategory(category) {
+    const freeCategories = ['area', 'population'];
+    return !freeCategories.includes(category);
 }
 
 function switchCategory(category) {
