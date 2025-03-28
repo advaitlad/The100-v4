@@ -900,7 +900,7 @@ async function handleCategorySelection(category) {
                     <div class="warning-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <h2>Login Required <i class="fas fa-info-circle info-icon" style="font-size: 0.8em; margin-left: 5px; cursor: help;"></i></h2>
+                    <h2>Login Required <i class="fas fa-info-circle info-icon" style="font-size: 16px; margin-left: 8px; cursor: help; color: #6b7280;"></i></h2>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
@@ -947,10 +947,9 @@ async function handleCategorySelection(category) {
                 }
 
                 .info-icon {
-                    color: #6b7280;
-                    transition: color 0.15s ease;
+                    display: inline-block;
                     position: relative;
-                    font-size: 14px;
+                    transition: color 0.15s ease;
                 }
 
                 .info-icon:hover {
