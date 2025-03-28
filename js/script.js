@@ -660,7 +660,6 @@ function initializeCategoriesList() {
             <div class="info">
                 <h3>${category.title}</h3>
             </div>
-            ${!freeCategories.includes(key) && isGuest ? '<i class="fas fa-lock"></i>' : ''}
         `;
 
         item.addEventListener('click', () => {

@@ -1234,32 +1234,37 @@ button:hover {
 .category-item.locked {
     background: #f8fafc;
     position: relative;
+    opacity: 0.8;
+}
+
+.category-item.locked .icon {
+    color: #94a3b8;
+}
+
+.category-item.locked .info h3 {
+    color: #64748b;
 }
 
 .category-item.locked::after {
-    content: "Login Required";
+    content: "";
     position: absolute;
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    background: #e2e8f0;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.category-item.locked::after i {
-    font-size: 0.9em;
+    width: 24px;
+    height: 24px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2394a3b8"><path d="M12 17a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M7 8V7a5 5 0 1110 0v1h1a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h1zM8 7a3 3 0 116 0v1H8V7z" clip-rule="evenodd"/></svg>') center/contain no-repeat;
+    opacity: 0.6;
 }
 
 .category-item.locked:hover {
-    transform: none;
-    box-shadow: none;
+    opacity: 1;
     border-color: #e2e8f0;
+    background: #f1f5f9;
+}
+
+.category-item.locked:hover::after {
+    opacity: 0.8;
 }
 
 .category-item:hover,
