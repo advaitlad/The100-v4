@@ -1220,11 +1220,11 @@ button:hover {
 .category-item {
     display: flex;
     align-items: center;
-    padding: 24px;
+    padding: 20px;
     background: white;
     border: 1px solid #E9ECEF;
     border-radius: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -1237,24 +1237,31 @@ button:hover {
 .category-item .info {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex: 1;
 }
 
 .category-item .icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #4475F1;
+    flex-shrink: 0;
+}
+
+.category-item .icon svg {
+    width: 20px;
+    height: 20px;
 }
 
 .category-item h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 500;
     color: #212529;
+    line-height: 1.2;
 }
 
 .category-item.locked {
@@ -1267,11 +1274,11 @@ button:hover {
 
 .login-required {
     display: inline-block;
-    padding: 6px 12px;
+    padding: 4px 8px;
     background-color: #EBF0FF;
     color: #4475F1;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 500;
     margin-left: auto;
 }
@@ -2152,7 +2159,7 @@ button:hover {
     border: none;
     border-radius: 16px;
     background-color: #F8F9FA;
-    font-size: 18px;
+    font-size: 16px;
     color: #212529;
     margin-bottom: 16px;
 }
