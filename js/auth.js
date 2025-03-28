@@ -44,13 +44,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overlay) overlay.remove();
     });
 
+    // Function to close login modal
+    function closeLoginModal() {
+        loginModal?.classList.add('hidden');
+        const overlay = document.querySelector('.overlay');
+        if (overlay) overlay.remove();
+        // Remove the escape key listener
+        document.removeEventListener('keydown', escapeKeyListener);
+    }
+
+    // Function to handle escape key
+    function escapeKeyListener(e) {
+        if (e.key === 'Escape') {
+            closeLoginModal();
+        }
+    }
+
     // Profile toggle click handler
     profileToggle?.addEventListener('click', () => {
         console.log('Profile toggle clicked'); // Debug log
         if (!window.userManager?.currentUser) {
+            // If login modal is visible, close it
+            if (loginModal && !loginModal.classList.contains('hidden')) {
+                closeLoginModal();
+                return;
+            }
+
+            // Remove any existing overlays first
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Show login modal
             loginModal?.classList.remove('hidden');
+            
+            // Add new overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            document.body.appendChild(overlay);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', closeLoginModal);
+            
+            // Add escape key listener
+            document.addEventListener('keydown', escapeKeyListener);
         } else {
-            // If profile modal is visible, close it
+            // Handle profile modal toggle for logged in users
             if (!profileModal?.classList.contains('hidden')) {
                 profileModal?.classList.add('hidden');
                 const overlay = document.querySelector('.overlay');
