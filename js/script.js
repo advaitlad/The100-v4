@@ -820,10 +820,13 @@ function handleCategoryKeyboard(e) {
 
 function handleCategorySelection(category) {
     // First, remove any existing login prompts
-    const existingOverlay = document.querySelector('.overlay.active');
+    const existingOverlay = document.querySelector('.overlay');
     const existingPrompt = document.querySelector('.confirm-modal');
+    const existingContent = document.querySelector('.confirm-content');
+    
     if (existingOverlay) existingOverlay.remove();
     if (existingPrompt) existingPrompt.remove();
+    if (existingContent) existingContent.remove();
 
     // Check if category is locked for guest users
     const freeCategories = ['area', 'population'];
@@ -832,7 +835,7 @@ function handleCategorySelection(category) {
     if (isLocked) {
         // Show login prompt
         const overlay = document.createElement('div');
-        overlay.className = 'overlay active';
+        overlay.className = 'overlay';
         
         const loginPrompt = document.createElement('div');
         loginPrompt.className = 'confirm-modal';
