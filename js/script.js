@@ -643,43 +643,32 @@ function toggleSidePanel() {
 
 function initializeCategoriesList() {
     const categoriesContainer = document.getElementById('categories-container');
-    if (!categoriesContainer) {
-        console.error('Categories container not found');
-        return;
-    }
-    
+    if (!categoriesContainer) return;
+
     categoriesContainer.innerHTML = '';
-    
+    const freeCategories = ['area', 'population'];
+    const isGuest = !window.userManager?.currentUser;
+
     Object.entries(gameCategories).forEach(([key, category]) => {
         const item = document.createElement('div');
-        item.className = `category-item ${key === currentCategory ? 'active' : ''}`;
-        
-        // Get appropriate icon based on category
-        const icon = getCategoryIcon(key);
-        
+        item.className = `category-item${key === currentCategory ? ' active' : ''}${!freeCategories.includes(key) && isGuest ? ' locked' : ''}`;
+        item.setAttribute('tabindex', '0');
         item.innerHTML = `
-            <div class="icon">${icon}</div>
+            <div class="icon">
+                <i class="fas ${category.icon || 'fa-globe'}"></i>
+            </div>
             <div class="info">
                 <h3>${category.title}</h3>
             </div>
+            ${!freeCategories.includes(key) && isGuest ? '<i class="fas fa-lock"></i>' : ''}
         `;
-        
+
         item.addEventListener('click', () => {
             if (key !== currentCategory) {
-                if (isGameInProgress()) {
-                    showConfirmationDialog((confirmed) => {
-                        if (confirmed) {
-                            switchCategory(key);
-                            toggleSidePanel();
-                        }
-                    });
-                } else {
-                    switchCategory(key);
-                    toggleSidePanel();
-                }
+                handleCategorySelection(key);
             }
         });
-        
+
         categoriesContainer.appendChild(item);
     });
 }
@@ -791,6 +780,75 @@ function handleCategoryKeyboard(e) {
     }
 }
 
+function handleCategorySelection(category) {
+    // Check if category is locked for guest users
+    const freeCategories = ['area', 'population'];
+    const isLocked = !freeCategories.includes(category) && (!window.userManager?.currentUser);
+    
+    if (isLocked) {
+        // Show login prompt
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay active';
+        
+        const loginPrompt = document.createElement('div');
+        loginPrompt.className = 'confirm-modal';
+        loginPrompt.innerHTML = `
+            <div class="confirm-content">
+                <div class="modal-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h2>Premium Category</h2>
+                    <p>This category is only available for registered users. Sign up or log in to unlock all categories! 🎮</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel">
+                        <i class="fas fa-times"></i>
+                        Maybe Later
+                    </button>
+                    <button class="modal-btn confirm">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login / Sign Up
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(loginPrompt);
+        
+        // Add event listeners
+        const cancelBtn = loginPrompt.querySelector('.cancel');
+        const confirmBtn = loginPrompt.querySelector('.confirm');
+        
+        const closePrompt = () => {
+            overlay.remove();
+            loginPrompt.remove();
+        };
+        
+        cancelBtn.addEventListener('click', closePrompt);
+        overlay.addEventListener('click', closePrompt);
+        
+        confirmBtn.addEventListener('click', () => {
+            closePrompt();
+            document.getElementById('profile-toggle').click();
+        });
+        
+        return;
+    }
+
+    // If category is not locked or user is logged in, proceed with selection
+    if (isGameInProgress()) {
+        showConfirmationDialog((confirmed) => {
+            if (confirmed) {
+                selectCategory(category);
+            }
+        });
+    } else {
+        selectCategory(category);
+    }
+}
+
 function switchCategory(category) {
     currentCategory = category;
     document.getElementById('current-category').textContent = gameCategories[category].title;
@@ -857,4 +915,15 @@ document.addEventListener('resetGame', (event) => {
     // Reset any popups
     const popups = document.querySelectorAll('.popup');
     popups.forEach(popup => popup.classList.add('hidden'));
+});
+
+// Add a listener for auth state changes to update category locks
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.userManager) {
+        const originalUpdateUI = window.userManager.updateUI;
+        window.userManager.updateUI = function() {
+            originalUpdateUI.call(this);
+            initializeCategoriesList(); // Refresh categories when auth state changes
+        };
+    }
 }); 

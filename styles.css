@@ -1228,6 +1228,38 @@ button:hover {
     align-items: center;
     gap: 16px;
     border: 1px solid transparent;
+    position: relative;
+}
+
+.category-item.locked {
+    background: #f8fafc;
+    position: relative;
+}
+
+.category-item.locked::after {
+    content: "Login Required";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.category-item.locked::after i {
+    font-size: 0.9em;
+}
+
+.category-item.locked:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #e2e8f0;
 }
 
 .category-item:hover,
