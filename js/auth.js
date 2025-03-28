@@ -102,8 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle login form submission
     loginForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const identifier = document.getElementById('login-identifier').value;
+        const identifier = document.getElementById('login-identifier').value.trim();
         const password = document.getElementById('login-password').value;
+        const loginError = document.getElementById('login-error');
 
         try {
             await window.userManager.login(identifier, password);
@@ -111,23 +112,16 @@ document.addEventListener('DOMContentLoaded', () => {
             loginForm.reset();
             const overlay = document.querySelector('.overlay');
             if (overlay) overlay.remove();
-        } catch (error) {
-            let errorMsg = 'Invalid username/email or password';
-            switch (error.code) {
-                case 'auth/invalid-login-credentials':
-                case 'auth/wrong-password':
-                case 'auth/user-not-found':
-                    errorMsg = 'Invalid username/email or password. Please try again.';
-                    break;
-                case 'auth/too-many-requests':
-                    errorMsg = 'Too many failed attempts. Please try again later.';
-                    break;
-                default:
-                    errorMsg = error.message || 'Error logging in';
-            }
-            showError(errorMsg);
             
-            // Clear password field
+            // Hide any previous error messages
+            loginError.classList.add('hidden');
+            loginError.textContent = '';
+        } catch (error) {
+            console.error('Login error:', error);
+            loginError.textContent = error.message || 'Error logging in. Please try again.';
+            loginError.classList.remove('hidden');
+            
+            // Clear password field but keep the identifier
             document.getElementById('login-password').value = '';
         }
     });
