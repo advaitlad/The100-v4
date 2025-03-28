@@ -780,7 +780,12 @@ function closeTutorialModal() {
 }
 
 // Add event listener for game reset
-document.addEventListener('resetGame', () => {
+document.addEventListener('resetGame', (event) => {
+    // Only reset if explicitly requested (not during logout)
+    if (event.detail?.forceReset !== true) {
+        return;
+    }
+    
     // Reset game state variables
     currentScore = 0;
     chancesLeft = 5;

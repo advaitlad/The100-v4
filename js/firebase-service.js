@@ -253,11 +253,7 @@ class FirebaseUserManager {
 
     async logout() {
         try {
-            // Dispatch game reset event first
-            const resetEvent = new CustomEvent('resetGame');
-            document.dispatchEvent(resetEvent);
-
-            // Then handle logout
+            // Handle logout
             await this.auth.signOut();
             this.currentUser = null;
             this.userData = null;
@@ -267,6 +263,10 @@ class FirebaseUserManager {
             if (usernameDisplay) {
                 usernameDisplay.textContent = 'Guest';
             }
+
+            // Dispatch resetGame event with forceReset flag
+            const resetEvent = new CustomEvent('resetGame', { detail: { forceReset: true } });
+            document.dispatchEvent(resetEvent);
             
             return true;
         } catch (error) {
@@ -274,7 +274,6 @@ class FirebaseUserManager {
             throw error;
         }
     }
-
     async saveGameResult(category, score, guesses) {
         if (!this.currentUser) return;
 
@@ -567,3 +566,4 @@ class FirebaseUserManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.userManager = new FirebaseUserManager();
 });
+
