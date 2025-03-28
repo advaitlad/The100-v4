@@ -900,17 +900,7 @@ async function handleCategorySelection(category) {
                     <div class="warning-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <div class="header-content">
-                        <h2>
-                            Login Required
-                            <div class="info-tooltip-container">
-                                <i class="fas fa-info-circle info-icon"></i>
-                                <span class="tooltip-content">
-                                    This category is available for registered users only. Create an account or log in to unlock all categories 🎮
-                                </span>
-                            </div>
-                        </h2>
-                    </div>
+                    <h2>Login Required <i class="fas fa-info-circle info-icon" style="font-size: 0.8em; margin-left: 5px; cursor: help;"></i></h2>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
@@ -928,82 +918,6 @@ async function handleCategorySelection(category) {
         // Add CSS styles for the tooltip
         const style = document.createElement('style');
         style.textContent = `
-            .header-content {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-            }
-
-            .header-content h2 {
-                display: flex;
-                align-items: center;
-                margin: 0;
-                font-size: 1.5em;
-                color: #1a1a1a;
-            }
-
-            .info-tooltip-container {
-                display: inline-flex;
-                align-items: center;
-                position: relative;
-                margin-left: 8px;
-            }
-
-            .info-icon {
-                color: #6b7280;
-                font-size: 0.85em;
-                cursor: help;
-                transition: color 0.15s ease;
-                padding: 4px;
-            }
-
-            .info-icon:hover {
-                color: #3b82f6;
-            }
-
-            .tooltip-content {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                top: calc(100% + 12px);
-                background: #1a1a1a;
-                color: #fff;
-                padding: 12px 16px;
-                border-radius: 8px;
-                font-size: 0.9em;
-                width: max-content;
-                max-width: 300px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-                z-index: 1002;
-                text-align: center;
-                line-height: 1.5;
-                font-weight: normal;
-                pointer-events: none;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.15s ease, transform 0.15s ease;
-                transform-origin: top;
-            }
-
-            .tooltip-content::before {
-                content: '';
-                position: absolute;
-                left: 50%;
-                top: -6px;
-                transform: translateX(-50%) rotate(45deg);
-                width: 12px;
-                height: 12px;
-                background: #1a1a1a;
-            }
-
-            .info-tooltip-container:hover .tooltip-content {
-                opacity: 1;
-                visibility: visible;
-                transform: translateX(-50%) translateY(0);
-                transition: opacity 0.15s ease, transform 0.15s ease;
-            }
-
             .modal-header {
                 display: flex;
                 flex-direction: column;
@@ -1011,6 +925,7 @@ async function handleCategorySelection(category) {
                 gap: 16px;
                 padding: 20px;
                 text-align: center;
+                position: relative;
             }
 
             .warning-icon {
@@ -1027,6 +942,47 @@ async function handleCategorySelection(category) {
             .warning-icon i {
                 font-size: 24px;
                 color: #374151;
+            }
+
+            .info-icon {
+                color: #6b7280;
+                transition: color 0.15s ease;
+                position: relative;
+            }
+
+            .info-icon:hover {
+                color: #3b82f6;
+            }
+
+            .info-icon:hover::after {
+                content: 'This category is available for registered users only. Create an account or log in to unlock all categories 🎮';
+                position: absolute;
+                right: calc(100% + 10px);
+                top: 50%;
+                transform: translateY(-50%);
+                background: #1a1a1a;
+                color: #fff;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 0.75em;
+                width: max-content;
+                max-width: 250px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                z-index: 1002;
+                text-align: left;
+                line-height: 1.4;
+                font-weight: normal;
+            }
+
+            .info-icon:hover::before {
+                content: '';
+                position: absolute;
+                right: calc(100% + 4px);
+                top: 50%;
+                transform: translateY(-50%) rotate(45deg);
+                width: 8px;
+                height: 8px;
+                background: #1a1a1a;
             }
 
             .modal-footer {
