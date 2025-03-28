@@ -265,7 +265,12 @@ class FirebaseUserManager {
             }
 
             // Dispatch resetGame event with forceReset flag
-            const resetEvent = new CustomEvent('resetGame', { detail: { forceReset: true } });
+            const resetEvent = new CustomEvent('resetGame', { 
+                detail: { 
+                    forceReset: true,
+                    reinitializeTiles: true  // Add flag to reinitialize tiles
+                } 
+            });
             document.dispatchEvent(resetEvent);
             
             return true;
