@@ -236,8 +236,11 @@ function updateUI(guess, result) {
         guessInput.disabled = true;
         submitButton.disabled = true;
 
-        // Show game over immediately after the final guess animation
-        showGameOver();
+        // Wait for all animations to complete before showing game over
+        const animationDelay = result.position ? 2000 : 1000; // 2s for correct guesses to show tile reveal and score animations
+        setTimeout(() => {
+            showGameOver();
+        }, animationDelay);
     }
 }
 
@@ -351,7 +354,7 @@ async function showGameOver() {
         document.body.appendChild(gameOverDiv);
     }
 
-    // Set game over content immediately
+    // Set game over content immediately but keep it hidden
     gameOverDiv.innerHTML = `
         <div class="game-over-header">
             <h2>Game Over!</h2>
@@ -369,15 +372,16 @@ async function showGameOver() {
         </div>
     `;
 
-    // Create and show overlay
+    // Create overlay but keep it hidden initially
     const overlay = document.createElement('div');
-    overlay.className = 'overlay active';
+    overlay.className = 'overlay';
     document.body.appendChild(overlay);
 
-    // Wait for the final guess animation to complete (1.5s)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Add a small delay to ensure all animations are complete
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Show game over popup
+    // Show overlay and game over screen
+    overlay.classList.add('active');
     gameOverDiv.classList.remove('hidden');
 
     // Save game results if user is logged in and userManager exists
