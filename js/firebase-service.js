@@ -1,0 +1,450 @@
+// Initialize Firebase
+class FirebaseUserManager {
+    constructor() {
+        this.auth = window.auth;
+        this.db = window.db;
+        this.currentUser = null;
+        this.isGuest = false;
+        this.userData = null;
+        this.setupAuthListeners();
+    }
+
+    setupAuthListeners() {
+        // Use window.auth to ensure we're using the globally initialized Firebase auth
+        this.auth.onAuthStateChanged(async (user) => {
+            this.currentUser = user;
+            const usernameDisplay = document.getElementById('username-display');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = user ? user.displayName || user.email : 'Guest';
+            }
+            await this.loadUserData();
+            await this.checkAndUpdateStreak();
+        });
+    }
+
+    async loadUserData() {
+        if (!this.currentUser) {
+            this.userData = null;
+            this.updateUI();
+            return;
+        }
+
+        try {
+            const userDoc = await this.db.collection('users').doc(this.currentUser.uid).get();
+            if (userDoc.exists) {
+                this.userData = userDoc.data();
+                this.updateUI();
+            } else {
+                // Create new user document if it doesn't exist
+                await this.createNewUser();
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            // Still update UI even if there's an error
+            this.updateUI();
+        }
+    }
+
+    async createNewUser() {
+        const userData = {
+            username: this.currentUser.email.split('@')[0],
+            email: this.currentUser.email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+            stats: {
+                gamesPlayed: 0,
+                highScore: 0,
+                currentStreak: 0,  // Initialize at 0
+                bestStreak: 0,     // Initialize at 0
+                categoryStats: {}
+            },
+            gameHistory: []
+        };
+
+        await this.db.collection('users').doc(this.currentUser.uid).set(userData);
+        this.userData = userData;
+        this.updateUI();
+    }
+
+    async signup(email, password, username) {
+        try {
+            // First check if username is already taken
+            const usernameQuery = await this.db.collection('users')
+                .where('username', '==', username)
+                .get();
+            
+            if (!usernameQuery.empty) {
+                throw { code: 'username-taken', message: 'This username is already taken' };
+            }
+
+            // Create auth user
+            const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // Create user document in Firestore with the provided username
+            const userData = {
+                username: username,
+                email: email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                stats: {
+                    gamesPlayed: 0,
+                    highScore: 0,
+                    currentStreak: 0,
+                    bestStreak: 0,
+                    categoryStats: {}
+                },
+                gameHistory: []
+            };
+
+            await this.db.collection('users').doc(user.uid).set(userData);
+            this.currentUser = user;
+            this.userData = userData;
+            this.updateUI();
+            return true;
+        } catch (error) {
+            console.error('Signup error:', error);
+            throw error;
+        }
+    }
+
+    async login(email, password) {
+        try {
+            const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+            this.currentUser = userCredential.user;
+            
+            // Update last login time
+            if (this.currentUser) {
+                await this.db.collection('users').doc(this.currentUser.uid).update({
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => {
+                    // Silently handle Firestore update error
+                    console.warn('Failed to update last login time:', error);
+                });
+            }
+            
+            await this.loadUserData();
+            return true;
+        } catch (error) {
+            // Don't log the full error stack to console
+            if (error.code === 'auth/invalid-login-credentials' || 
+                error.code === 'auth/wrong-password' || 
+                error.code === 'auth/user-not-found') {
+                throw error; // Just throw the error without logging
+            } else {
+                console.error('Unexpected login error:', error);
+                throw error;
+            }
+        }
+    }
+
+    async logout() {
+        try {
+            await this.auth.signOut();
+            this.currentUser = null;
+            
+            // Update UI elements
+            const usernameDisplay = document.getElementById('username-display');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = 'Guest';
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Logout error:', error);
+            throw error;
+        }
+    }
+
+    async saveGameResult(category, score, guesses) {
+        if (!this.currentUser) return;
+
+        const gameResult = {
+            category,
+            score,
+            guesses,
+            date: new Date().toISOString()
+        };
+
+        // Update user stats
+        const userRef = this.db.collection('users').doc(this.currentUser.uid);
+        
+        try {
+            // First get the current user data to properly calculate the streak
+            const userDoc = await userRef.get();
+            const currentData = userDoc.data();
+            
+            // Calculate new streak
+            let newStreak = 1; // Playing a game today sets streak to 1
+            let newBestStreak = currentData?.stats?.bestStreak || 0;
+
+            if (currentData?.lastPlayedDate) {
+                const lastPlayed = new Date(currentData.lastPlayedDate);
+                const currentDate = new Date();
+                
+                // Reset time part to compare just the dates
+                lastPlayed.setHours(0, 0, 0, 0);
+                currentDate.setHours(0, 0, 0, 0);
+                
+                const diffTime = currentDate - lastPlayed;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    // Played consecutive days
+                    newStreak = (currentData.stats.currentStreak || 0) + 1;
+                } else if (diffDays === 0) {
+                    // Already played today, keep current streak
+                    newStreak = currentData.stats.currentStreak || 1;
+                } else {
+                    // More than one day gap, streak was already reset to 0
+                    // Playing today makes it 1
+                    newStreak = 1;
+                }
+            }
+
+            // Update best streak if current streak is higher
+            newBestStreak = Math.max(newBestStreak, newStreak);
+
+            // Update all stats at once
+            await userRef.update({
+                'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
+                'stats.highScore': Math.max(currentData?.stats?.highScore || 0, score),
+                [`stats.categoryStats.${category}.gamesPlayed`]: firebase.firestore.FieldValue.increment(1),
+                [`stats.categoryStats.${category}.highScore`]: Math.max(currentData?.stats?.categoryStats?.[category]?.highScore || 0, score),
+                'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult),
+                'lastPlayedDate': new Date().toLocaleDateString(),
+                'stats.currentStreak': newStreak,
+                'stats.bestStreak': newBestStreak
+            });
+
+            // Reload user data
+            const updatedDoc = await userRef.get();
+            this.userData = updatedDoc.data();
+            this.updateUI();
+        } catch (error) {
+            console.error('Error saving game result:', error);
+            throw error;
+        }
+    }
+
+    updateUI() {
+        // Get UI elements
+        const usernameDisplay = document.getElementById('username-display');
+        const profileToggle = document.getElementById('profile-toggle');
+        const profileUsername = document.getElementById('profile-username');
+        
+        // Default values for guest/logged out state
+        let displayName = 'Guest';
+        let toggleHTML = `<i class="fas fa-user"></i> Login`;
+
+        // Update if user is logged in and we have user data
+        if (this.currentUser && this.userData) {
+            displayName = this.userData.username || this.currentUser.email.split('@')[0];
+            toggleHTML = `<i class="fas fa-user"></i> ${displayName}`;
+            
+            // Update profile username
+            if (profileUsername) {
+                profileUsername.textContent = displayName;
+            }
+            
+            // Update profile stats if they exist
+            this.updateProfileStats();
+        }
+
+        // Safely update UI elements
+        if (usernameDisplay) usernameDisplay.textContent = displayName;
+        if (profileToggle) profileToggle.innerHTML = toggleHTML;
+    }
+
+    updateProfileStats() {
+        if (!this.userData || !this.userData.stats) return;
+
+        const stats = this.userData.stats;
+        
+        // Update games played
+        const gamesPlayedElement = document.getElementById('games-played');
+        if (gamesPlayedElement) {
+            gamesPlayedElement.textContent = stats.gamesPlayed || 0;
+        }
+
+        // Update high score and its category
+        const highScoreElement = document.getElementById('high-score');
+        const highScoreCategoryElement = document.getElementById('high-score-category');
+        
+        if (highScoreElement) {
+            highScoreElement.textContent = stats.highScore || 0;
+        }
+
+        // Find category with highest score
+        if (highScoreCategoryElement && stats.categoryStats) {
+            let highestScoreCategory = '';
+            let highestScore = 0;
+            
+            Object.entries(stats.categoryStats).forEach(([category, catStats]) => {
+                if (catStats.highScore > highestScore) {
+                    highestScore = catStats.highScore;
+                    highestScoreCategory = category;
+                }
+            });
+
+            if (highestScoreCategory) {
+                // Map category keys to full names
+                const categoryNames = {
+                    'area': 'Top 100 Countries by Area',
+                    'population': 'Top 100 Countries by Population',
+                    'gdp': 'Top 100 Countries by GDP',
+                    // Add more categories as needed
+                };
+
+                const fullCategoryName = categoryNames[highestScoreCategory] || highestScoreCategory;
+                highScoreCategoryElement.textContent = `${fullCategoryName}`;
+            }
+        }
+
+        // Update streaks
+        const currentStreakElement = document.getElementById('current-streak');
+        const bestStreakElement = document.getElementById('best-streak');
+        
+        if (currentStreakElement) {
+            currentStreakElement.textContent = stats.currentStreak || 0;
+        }
+        if (bestStreakElement) {
+            bestStreakElement.textContent = stats.bestStreak || 0;
+        }
+    }
+
+    async updateStreak() {
+        if (!this.currentUser) return;
+
+        const userRef = this.db.collection('users').doc(this.currentUser.uid);
+        await this.db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            const userData = userDoc.data();
+            
+            const today = new Date().toLocaleDateString();
+            
+            if (!userData.lastPlayedDate) {
+                userData.lastPlayedDate = today;
+                userData.currentStreak = 1;
+                userData.bestStreak = 1;
+            } else {
+                const lastPlayed = new Date(userData.lastPlayedDate);
+                const currentDate = new Date();
+                const diffTime = Math.abs(currentDate - lastPlayed);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    userData.currentStreak++;
+                    userData.bestStreak = Math.max(userData.currentStreak, userData.bestStreak);
+                } else if (diffDays > 1) {
+                    userData.currentStreak = 1;
+                }
+            }
+
+            userData.lastPlayedDate = today;
+            transaction.update(userRef, userData);
+        });
+
+        await this.loadUserData();
+    }
+
+    playAsGuest() {
+        this.isGuest = true;
+        this.currentUser = null;
+        this.updateUI();
+    }
+
+    async checkUserData() {
+        if (!this.currentUser) {
+            console.log('No user logged in');
+            return;
+        }
+        
+        try {
+            const userDoc = await this.db.collection('users').doc(this.currentUser.uid).get();
+            if (userDoc.exists) {
+                console.log('User data:', userDoc.data());
+            } else {
+                console.log('No user document found');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }
+
+    async deleteAccount(password) {
+        if (!this.currentUser) {
+            throw new Error('No user logged in');
+        }
+
+        try {
+            // Re-authenticate user before deletion
+            const credential = firebase.auth.EmailAuthProvider.credential(
+                this.currentUser.email,
+                password
+            );
+            await this.currentUser.reauthenticateWithCredential(credential);
+
+            // First delete the user document from Firestore
+            await this.db.collection('users').doc(this.currentUser.uid).delete();
+
+            // Then delete the user authentication account
+            await this.currentUser.delete();
+
+            // Clear local data
+            this.currentUser = null;
+            this.userData = null;
+
+            // Update UI
+            const usernameDisplay = document.getElementById('username-display');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = 'Guest';
+            }
+
+            // Hide profile modal
+            const profileModal = document.getElementById('profile-modal');
+            if (profileModal) {
+                profileModal.classList.add('hidden');
+            }
+
+            // Remove overlay
+            const overlay = document.querySelector('.overlay');
+            if (overlay) overlay.remove();
+
+            return true;
+        } catch (error) {
+            console.error('Delete account error:', error);
+            throw error;
+        }
+    }
+
+    async checkAndUpdateStreak() {
+        if (!this.currentUser || !this.userData?.lastPlayedDate) return;
+
+        const lastPlayed = new Date(this.userData.lastPlayedDate);
+        const currentDate = new Date();
+        
+        // Reset time part to compare just the dates
+        lastPlayed.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = currentDate - lastPlayed;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        // If more than 1 day has passed, reset streak to 0
+        if (diffDays > 1) {
+            const userRef = this.db.collection('users').doc(this.currentUser.uid);
+            await userRef.update({
+                'stats.currentStreak': 0
+            });
+            
+            this.userData.stats.currentStreak = 0;
+            this.updateUI();
+        }
+    }
+}
+
+// Initialize after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.userManager = new FirebaseUserManager();
+});
