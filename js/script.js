@@ -1005,7 +1005,6 @@ async function handleCategorySelection(category) {
                     display: flex;
                     gap: 12px;
                     padding: 16px;
-                    border-top: 1px solid #e5e7eb;
                 }
 
                 .modal-btn {
