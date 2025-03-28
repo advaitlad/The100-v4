@@ -945,15 +945,14 @@ async function handleCategorySelection(category) {
     // Switch to the selected category
     await switchCategory(category);
 
-    // Close the category panel since the category actually changed
-    const categoryPanel = document.querySelector('.category-panel');
-    if (categoryPanel && !categoryPanel.classList.contains('hidden')) {
-        categoryPanel.classList.add('hidden');
-        
-        // Also remove active class from the button
-        const categoryButton = document.querySelector('.category-button');
-        if (categoryButton) {
-            categoryButton.classList.remove('active');
+    // Close the side panel since the category actually changed
+    const sidePanel = document.querySelector('.side-panel');
+    if (sidePanel) {
+        sidePanel.classList.remove('active');
+        // Also remove the side panel active class from game container
+        const gameContainer = document.querySelector('.game-container');
+        if (gameContainer) {
+            gameContainer.classList.remove('side-panel-active');
         }
     }
 }
