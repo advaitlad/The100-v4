@@ -65,11 +65,6 @@ function initializeDOMElements() {
         const tutorialModal = document.getElementById('tutorial-modal');
         if (!tutorialModal) return;
         
-        // Remove any existing overlays first
-        const existingOverlays = document.querySelectorAll('.overlay');
-        existingOverlays.forEach(overlay => overlay.remove());
-        
-        // Create new overlay
         const overlay = document.createElement('div');
         overlay.className = 'overlay active';
         document.body.appendChild(overlay);
@@ -106,33 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Game data not found');
         return;
     }
-
-    // Show welcome modal by default
-    const welcomeModal = document.getElementById('welcome-modal');
-    const gameContainer = document.querySelector('.game-container');
     
-    if (welcomeModal) {
-        welcomeModal.classList.remove('hidden');
-    }
-    
-    if (gameContainer) {
-        gameContainer.style.display = 'none';
-    }
-    
-    // Handle guest mode button click
-    document.getElementById('play-as-guest')?.addEventListener('click', function() {
-        welcomeModal.classList.add('hidden');
-        gameContainer.style.display = 'block';
-        initializeTiles();
-    });
-    
-    // Handle login button click
-    document.getElementById('welcome-login')?.addEventListener('click', function() {
-        welcomeModal.classList.add('hidden');
-        document.getElementById('login-modal').classList.remove('hidden');
-    });
-    
-    // Initialize DOM elements (but don't show game yet)
+    // Then initialize DOM elements
     initializeDOMElements();
 });
 
