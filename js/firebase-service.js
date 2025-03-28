@@ -338,27 +338,43 @@ class FirebaseUserManager {
             // Get existing user data
             const userData = userDoc.data();
             
+            // Ensure stats object exists
+            const stats = userData.stats || {};
+            const categoryStats = stats.categoryStats || {};
+            const currentCategoryStats = categoryStats[category] || { highScore: 0, gamesPlayed: 0 };
+
             // Prepare the update object
             const updateData = {
-                gameHistory: firebase.firestore.FieldValue.arrayUnion(gameResult),
-                [`stats.gamesPlayed`]: (userData.stats?.gamesPlayed || 0) + 1,
-                [`stats.highScore`]: Math.max(userData.stats?.highScore || 0, score)
+                stats: {
+                    ...stats,
+                    gamesPlayed: (stats.gamesPlayed || 0) + 1,
+                    highScore: Math.max(stats.highScore || 0, score),
+                    categoryStats: {
+                        ...categoryStats,
+                        [category]: {
+                            highScore: Math.max(currentCategoryStats.highScore || 0, score),
+                            gamesPlayed: (currentCategoryStats.gamesPlayed || 0) + 1
+                        }
+                    }
+                }
             };
 
-            // Update category stats
-            const currentCategoryStats = userData.stats?.categoryStats?.[category] || {
-                highScore: 0,
-                gamesPlayed: 0
-            };
+            // Add game to history using arrayUnion
+            await userRef.update({
+                ...updateData,
+                gameHistory: firebase.firestore.FieldValue.arrayUnion(gameResult)
+            });
 
-            updateData[`stats.categoryStats.${category}`] = {
-                highScore: Math.max(currentCategoryStats.highScore || 0, score),
-                gamesPlayed: (currentCategoryStats.gamesPlayed || 0) + 1
-            };
-
-            // Update the document
-            await userRef.update(updateData);
             console.log('Game result saved successfully');
+            
+            // Update local data
+            this.userData = {
+                ...userData,
+                ...updateData,
+                gameHistory: [...(userData.gameHistory || []), gameResult]
+            };
+            this.updateUI();
+
         } catch (error) {
             console.error('Error saving game result:', error);
             // Don't throw the error - we want to fail gracefully
@@ -503,19 +519,35 @@ class FirebaseUserManager {
                 }
             }
 
-            // Update the document with transaction to ensure atomic update
-            await this.db.runTransaction(async (transaction) => {
-                const doc = await transaction.get(userRef);
-                if (!doc.exists) return;
+            // Prepare the update data
+            const updateData = {
+                lastPlayedDate: now.toISOString()
+            };
 
-                transaction.update(userRef, {
-                    lastPlayedDate: now.toISOString(),
-                    'stats.currentStreak': currentStreak,
-                    'stats.bestStreak': bestStreak
-                });
-            });
+            // Only update stats if they've changed
+            if (currentStreak !== userData.stats?.currentStreak || bestStreak !== userData.stats?.bestStreak) {
+                updateData['stats'] = {
+                    ...(userData.stats || {}),
+                    currentStreak: currentStreak,
+                    bestStreak: bestStreak
+                };
+            }
 
-            console.log('Streak updated successfully');
+            // Update the document
+            await userRef.update(updateData);
+            console.log('Streak updated successfully:', { currentStreak, bestStreak });
+
+            // Update local data
+            if (userData.stats) {
+                userData.stats.currentStreak = currentStreak;
+                userData.stats.bestStreak = bestStreak;
+            } else {
+                userData.stats = { currentStreak, bestStreak };
+            }
+            userData.lastPlayedDate = now.toISOString();
+            this.userData = userData;
+            this.updateUI();
+
         } catch (error) {
             console.error('Error updating streak:', error);
             // Don't throw the error - we want to fail gracefully
