@@ -107,59 +107,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Initialize welcome modal handlers
-    initializeWelcomeModal();
+    // Show welcome modal by default
+    const welcomeModal = document.getElementById('welcome-modal');
+    const gameContainer = document.querySelector('.game-container');
+    
+    if (welcomeModal) {
+        welcomeModal.classList.remove('hidden');
+    }
+    
+    if (gameContainer) {
+        gameContainer.style.display = 'none';
+    }
+    
+    // Handle guest mode button click
+    document.getElementById('play-as-guest')?.addEventListener('click', function() {
+        welcomeModal.classList.add('hidden');
+        gameContainer.style.display = 'block';
+        initializeTiles();
+    });
+    
+    // Handle login button click
+    document.getElementById('welcome-login')?.addEventListener('click', function() {
+        welcomeModal.classList.add('hidden');
+        document.getElementById('login-modal').classList.remove('hidden');
+    });
     
     // Initialize DOM elements (but don't show game yet)
     initializeDOMElements();
 });
-
-function initializeWelcomeModal() {
-    const welcomeModal = document.getElementById('welcome-modal');
-    const gameContainer = document.querySelector('.game-container');
-    const playAsGuestBtn = document.getElementById('play-as-guest');
-    const welcomeLoginBtn = document.getElementById('welcome-login');
-
-    // Show welcome modal by default
-    welcomeModal.classList.remove('hidden');
-
-    // Handle guest play
-    playAsGuestBtn?.addEventListener('click', () => {
-        welcomeModal.classList.add('hidden');
-        gameContainer.classList.add('visible');
-        
-        // Set up guest mode
-        if (window.userManager) {
-            window.userManager.playAsGuest();
-        }
-        
-        // Update UI for guest mode
-        const profileToggle = document.getElementById('profile-toggle');
-        const usernameDisplay = document.getElementById('username-display');
-        if (profileToggle) profileToggle.innerHTML = '<i class="fas fa-user"></i> Guest';
-        if (usernameDisplay) usernameDisplay.textContent = 'Guest';
-    });
-
-    // Handle login choice
-    welcomeLoginBtn?.addEventListener('click', () => {
-        welcomeModal.classList.add('hidden');
-        const loginModal = document.getElementById('login-modal');
-        if (loginModal) {
-            loginModal.classList.remove('hidden');
-            // Add overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay active';
-            document.body.appendChild(overlay);
-
-            // Close login modal and show welcome modal if overlay is clicked
-            overlay.addEventListener('click', () => {
-                loginModal.classList.add('hidden');
-                overlay.remove();
-                welcomeModal.classList.remove('hidden');
-            });
-        }
-    });
-}
 
 function initializeTiles() {
     const tilesWrapper = document.querySelector('.tiles-wrapper');
