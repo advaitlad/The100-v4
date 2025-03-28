@@ -2184,15 +2184,15 @@ button:hover {
 
 .close-game-over-btn {
     position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 10px;
+    top: 10px;
+    transform: none;
     background: none;
     border: none;
     font-size: 24px;
     color: #fff;
     cursor: pointer;
-    padding: 5px 10px;
+    padding: 5px;
     border-radius: 50%;
     transition: background-color 0.2s ease;
     display: flex;
