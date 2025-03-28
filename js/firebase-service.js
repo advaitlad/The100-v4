@@ -319,10 +319,10 @@ class FirebaseUserManager {
 
         try {
             // Get the current user document
-            const userDoc = this.db.collection('users').doc(this.currentUser.uid);
-            const userSnapshot = await userDoc.get();
+            const userRef = this.db.collection('users').doc(this.currentUser.uid);
+            const userDoc = await userRef.get();
 
-            if (!userSnapshot.exists()) {
+            if (!userDoc.exists) {
                 console.error('User document not found');
                 return;
             }
@@ -335,37 +335,29 @@ class FirebaseUserManager {
                 date: new Date().toISOString()
             };
 
-            // Get existing game history or initialize empty array
-            const userData = userSnapshot.data();
-            const gameHistory = Array.isArray(userData.gameHistory) ? userData.gameHistory : [];
+            // Get existing user data
+            const userData = userDoc.data();
             
-            // Add new game to history
-            gameHistory.push(gameResult);
+            // Prepare the update object
+            const updateData = {
+                gameHistory: firebase.firestore.FieldValue.arrayUnion(gameResult),
+                [`stats.gamesPlayed`]: (userData.stats?.gamesPlayed || 0) + 1,
+                [`stats.highScore`]: Math.max(userData.stats?.highScore || 0, score)
+            };
 
             // Update category stats
-            const categoryStats = userData.categoryStats || {};
-            const currentCategoryStats = categoryStats[category] || {
+            const currentCategoryStats = userData.stats?.categoryStats?.[category] || {
                 highScore: 0,
                 gamesPlayed: 0
             };
 
-            // Update the stats
-            currentCategoryStats.gamesPlayed = (currentCategoryStats.gamesPlayed || 0) + 1;
-            currentCategoryStats.highScore = Math.max(currentCategoryStats.highScore || 0, score);
-
-            // Prepare the update object
-            const updateData = {
-                gameHistory: gameHistory,
-                [`categoryStats.${category}`]: currentCategoryStats,
-                stats: {
-                    ...userData.stats,
-                    gamesPlayed: (userData.stats?.gamesPlayed || 0) + 1,
-                    highScore: Math.max(userData.stats?.highScore || 0, score)
-                }
+            updateData[`stats.categoryStats.${category}`] = {
+                highScore: Math.max(currentCategoryStats.highScore || 0, score),
+                gamesPlayed: (currentCategoryStats.gamesPlayed || 0) + 1
             };
 
             // Update the document
-            await userDoc.update(updateData);
+            await userRef.update(updateData);
             console.log('Game result saved successfully');
         } catch (error) {
             console.error('Error saving game result:', error);
@@ -467,15 +459,15 @@ class FirebaseUserManager {
 
         try {
             // Get the current user document
-            const userDoc = this.db.collection('users').doc(this.currentUser.uid);
-            const userSnapshot = await userDoc.get();
+            const userRef = this.db.collection('users').doc(this.currentUser.uid);
+            const userDoc = await userRef.get();
 
-            if (!userSnapshot.exists()) {
+            if (!userDoc.exists) {
                 console.error('User document not found');
                 return;
             }
 
-            const userData = userSnapshot.data();
+            const userData = userDoc.data();
             const now = new Date();
             now.setHours(0, 0, 0, 0); // Normalize to midnight
 
@@ -511,11 +503,16 @@ class FirebaseUserManager {
                 }
             }
 
-            // Update the document
-            await userDoc.update({
-                lastPlayedDate: now.toISOString(),
-                'stats.currentStreak': currentStreak,
-                'stats.bestStreak': bestStreak
+            // Update the document with transaction to ensure atomic update
+            await this.db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(userRef);
+                if (!doc.exists) return;
+
+                transaction.update(userRef, {
+                    lastPlayedDate: now.toISOString(),
+                    'stats.currentStreak': currentStreak,
+                    'stats.bestStreak': bestStreak
+                });
             });
 
             console.log('Streak updated successfully');
