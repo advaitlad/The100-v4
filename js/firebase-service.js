@@ -312,64 +312,64 @@ class FirebaseUserManager {
         }
     }
     async saveGameResult(category, score, guesses) {
-        if (!this.currentUser) return;
+        if (!this.currentUser) {
+            console.log('No user logged in, skipping game save');
+            return;
+        }
 
-        const gameResult = {
-            category,
-            score,
-            guesses,
-            date: new Date().toISOString()
-        };
-
-        const userRef = this.db.collection('users').doc(this.currentUser.uid);
-        
         try {
-            // First get the current user data
-            const userDoc = await userRef.get();
-            if (!userDoc.exists) {
-                console.error('User document does not exist');
+            // Get the current user document
+            const userDoc = this.db.collection('users').doc(this.currentUser.uid);
+            const userSnapshot = await userDoc.get();
+
+            if (!userSnapshot.exists()) {
+                console.error('User document not found');
                 return;
             }
-            const currentData = userDoc.data();
+
+            // Format the game result
+            const gameResult = {
+                category: category || 'unknown',
+                score: parseInt(score) || 0,
+                guesses: Array.isArray(guesses) ? guesses : [],
+                date: new Date().toISOString()
+            };
+
+            // Get existing game history or initialize empty array
+            const userData = userSnapshot.data();
+            const gameHistory = Array.isArray(userData.gameHistory) ? userData.gameHistory : [];
             
-            // Step 1: Update basic stats
-            await userRef.update({
-                'stats.gamesPlayed': firebase.firestore.FieldValue.increment(1),
-                'stats.highScore': Math.max(currentData.stats?.highScore || 0, score)
-            });
+            // Add new game to history
+            gameHistory.push(gameResult);
 
-            // Step 2: Update category stats
-            const categoryUpdate = {};
-            if (!currentData.stats?.categoryStats) {
-                categoryUpdate['stats.categoryStats'] = {};
-            }
-            categoryUpdate[`stats.categoryStats.${category}.gamesPlayed`] = firebase.firestore.FieldValue.increment(1);
-            categoryUpdate[`stats.categoryStats.${category}.highScore`] = Math.max(
-                currentData.stats?.categoryStats?.[category]?.highScore || 0,
-                score
-            );
-            await userRef.update(categoryUpdate);
+            // Update category stats
+            const categoryStats = userData.categoryStats || {};
+            const currentCategoryStats = categoryStats[category] || {
+                highScore: 0,
+                gamesPlayed: 0
+            };
 
-            // Step 3: Update game history
-            await userRef.update({
-                'gameHistory': firebase.firestore.FieldValue.arrayUnion(gameResult)
-            });
+            // Update the stats
+            currentCategoryStats.gamesPlayed = (currentCategoryStats.gamesPlayed || 0) + 1;
+            currentCategoryStats.highScore = Math.max(currentCategoryStats.highScore || 0, score);
 
-            // Finally, reload user data
-            const updatedDoc = await userRef.get();
-            this.userData = updatedDoc.data();
-            this.updateUI();
+            // Prepare the update object
+            const updateData = {
+                gameHistory: gameHistory,
+                [`categoryStats.${category}`]: currentCategoryStats,
+                stats: {
+                    ...userData.stats,
+                    gamesPlayed: (userData.stats?.gamesPlayed || 0) + 1,
+                    highScore: Math.max(userData.stats?.highScore || 0, score)
+                }
+            };
 
+            // Update the document
+            await userDoc.update(updateData);
+            console.log('Game result saved successfully');
         } catch (error) {
-            console.error('Error saving game result:', {
-                error,
-                errorCode: error.code,
-                errorMessage: error.message,
-                category,
-                score,
-                userId: this.currentUser.uid
-            });
-            throw error;
+            console.error('Error saving game result:', error);
+            // Don't throw the error - we want to fail gracefully
         }
     }
 
@@ -460,77 +460,69 @@ class FirebaseUserManager {
     }
 
     async updateStreak() {
-        if (!this.currentUser) return;
+        if (!this.currentUser) {
+            console.log('No user logged in, skipping streak update');
+            return;
+        }
 
-        const userRef = this.db.collection('users').doc(this.currentUser.uid);
-        
-        await this.db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(userRef);
-            if (!doc.exists) return;
+        try {
+            // Get the current user document
+            const userDoc = this.db.collection('users').doc(this.currentUser.uid);
+            const userSnapshot = await userDoc.get();
 
-            const userData = doc.data();
-            const currentDate = new Date();
-            currentDate.setHours(0, 0, 0, 0);
-
-            // Initialize stats if they don't exist
-            if (!userData.stats) {
-                userData.stats = {
-                    currentStreak: 1,
-                    bestStreak: 1
-                };
+            if (!userSnapshot.exists()) {
+                console.error('User document not found');
+                return;
             }
 
-            if (!userData.lastPlayedDate) {
+            const userData = userSnapshot.data();
+            const now = new Date();
+            now.setHours(0, 0, 0, 0); // Normalize to midnight
+
+            // Get the last played date
+            let lastPlayedDate = null;
+            if (userData.lastPlayedDate) {
+                lastPlayedDate = new Date(userData.lastPlayedDate);
+                lastPlayedDate.setHours(0, 0, 0, 0); // Normalize to midnight
+            }
+
+            // Initialize stats if they don't exist
+            const stats = userData.stats || {};
+            let { currentStreak = 0, bestStreak = 0 } = stats;
+
+            if (!lastPlayedDate) {
                 // First time playing
-                userData.stats.currentStreak = 1;
-                userData.stats.bestStreak = 1;
-                console.log('Debug - First time playing, setting initial streak');
+                currentStreak = 1;
+                bestStreak = 1;
             } else {
-                // Convert stored date string to Date object
-                let lastPlayed = new Date(userData.lastPlayedDate);
-                lastPlayed.setHours(0, 0, 0, 0);
+                // Calculate days between last play and now
+                const diffInDays = Math.floor((now - lastPlayedDate) / (1000 * 60 * 60 * 24));
 
-                if (isNaN(lastPlayed.getTime())) {
-                    console.log('Debug - Invalid last played date, resetting streak');
-                    userData.stats.currentStreak = 1;
-                    userData.stats.bestStreak = Math.max(1, userData.stats?.bestStreak || 0);
+                if (diffInDays === 0) {
+                    // Same day, keep current streak
+                    // No changes needed
+                } else if (diffInDays === 1) {
+                    // Consecutive day
+                    currentStreak++;
+                    bestStreak = Math.max(bestStreak, currentStreak);
                 } else {
-                    const diffTime = currentDate.getTime() - lastPlayed.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-                    console.log('Debug - Day Difference:', {
-                        lastPlayed: lastPlayed.toISOString(),
-                        currentDate: currentDate.toISOString(),
-                        diffDays,
-                        diffTime
-                    });
-
-                    if (diffDays === 1) {
-                        // Consecutive day
-                        userData.stats.currentStreak = (userData.stats?.currentStreak || 0) + 1;
-                        userData.stats.bestStreak = Math.max(userData.stats.currentStreak, userData.stats?.bestStreak || 0);
-                        console.log('Debug - Consecutive day detected:', {
-                            newStreak: userData.stats.currentStreak,
-                            newBestStreak: userData.stats.bestStreak
-                        });
-                    } else if (diffDays === 0) {
-                        // Same day, keep current streak
-                        userData.stats.currentStreak = userData.stats?.currentStreak || 1;
-                        console.log('Debug - Same day detected, keeping streak:', userData.stats.currentStreak);
-                    } else {
-                        // More than one day gap, reset streak
-                        userData.stats.currentStreak = 1;
-                        console.log('Debug - Gap detected, resetting streak');
-                    }
+                    // More than one day gap, reset streak
+                    currentStreak = 1;
                 }
             }
 
-            // Store current date as ISO string
-            userData.lastPlayedDate = currentDate.toISOString();
-            transaction.update(userRef, userData);
-        });
+            // Update the document
+            await userDoc.update({
+                lastPlayedDate: now.toISOString(),
+                'stats.currentStreak': currentStreak,
+                'stats.bestStreak': bestStreak
+            });
 
-        await this.loadUserData();
+            console.log('Streak updated successfully');
+        } catch (error) {
+            console.error('Error updating streak:', error);
+            // Don't throw the error - we want to fail gracefully
+        }
     }
 
     playAsGuest() {

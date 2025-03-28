@@ -386,28 +386,33 @@ async function showGameOver() {
 
     // Save game results if user is logged in and userManager exists
     if (window.userManager?.currentUser) {
-        const gameResults = [];
-        // Safely get guesses from the list
-        const guessList = guessesList?.children || [];
-        Array.from(guessList).forEach(li => {
-            const nameSpan = li.querySelector('span:first-child');
-            const scoreSpan = li.querySelector('span:last-child');
-            if (nameSpan && scoreSpan) {
-                gameResults.push({
-                    name: nameSpan.textContent,
-                    score: parseInt(scoreSpan.textContent) || 0
-                });
-            }
-        });
-        
         try {
-            // Run these operations in parallel since they don't depend on each other
-            await Promise.all([
-                window.userManager.updateStreak(),
-                window.userManager.saveGameResult(currentCategory, currentScore, gameResults)
+            // Prepare game results
+            const gameResults = [];
+            const guessList = guessesList?.children || [];
+            Array.from(guessList).forEach(li => {
+                const nameSpan = li.querySelector('span:first-child');
+                const scoreSpan = li.querySelector('span:last-child');
+                if (nameSpan && scoreSpan) {
+                    gameResults.push({
+                        name: nameSpan.textContent,
+                        score: parseInt(scoreSpan.textContent.split(' ')[0]) || 0
+                    });
+                }
+            });
+
+            // Run these operations in parallel but handle errors separately
+            await Promise.allSettled([
+                window.userManager.updateStreak().catch(error => {
+                    console.error('Error updating streak:', error);
+                }),
+                window.userManager.saveGameResult(currentCategory, currentScore, gameResults).catch(error => {
+                    console.error('Error saving game result:', error);
+                })
             ]);
         } catch (error) {
-            console.error('Error updating streak or saving game:', error);
+            console.error('Error in game over operations:', error);
+            // Continue with the game over screen even if saving fails
         }
     }
 
