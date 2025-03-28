@@ -915,8 +915,15 @@ async function handleCategorySelection(category) {
 
         confirmBtn.addEventListener('click', () => {
             closePrompt();
-            document.getElementById('profile-modal').classList.remove('hidden');
-            document.querySelector('.overlay').classList.add('active');
+            // Show the login modal instead of profile modal
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+                // Create a new overlay for the login modal
+                const loginOverlay = document.createElement('div');
+                loginOverlay.className = 'overlay active';
+                document.body.appendChild(loginOverlay);
+            }
         });
 
         // Don't close the panel since category didn't change
