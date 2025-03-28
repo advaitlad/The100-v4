@@ -220,18 +220,20 @@ class FirebaseUserManager {
 
     async logout() {
         try {
+            // Dispatch game reset event first
+            const resetEvent = new CustomEvent('resetGame');
+            document.dispatchEvent(resetEvent);
+
+            // Then handle logout
             await this.auth.signOut();
             this.currentUser = null;
+            this.userData = null;
             
             // Reset UI elements
             const usernameDisplay = document.getElementById('username-display');
             if (usernameDisplay) {
                 usernameDisplay.textContent = 'Guest';
             }
-
-            // Dispatch a custom event to reset game state
-            const resetEvent = new CustomEvent('resetGame');
-            document.dispatchEvent(resetEvent);
             
             return true;
         } catch (error) {

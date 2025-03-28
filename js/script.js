@@ -774,12 +774,12 @@ function closeTutorialModal() {
 
 // Add event listener for game reset
 document.addEventListener('resetGame', () => {
-    // Reset game state
+    // Reset game state variables
     currentScore = 0;
     chancesLeft = 5;
     guessedCountries = [];
     
-    // Update score and chances display
+    // Reset score and chances display
     const scoreSpan = document.getElementById('score');
     const chanceSpan = document.getElementById('chances');
     if (scoreSpan) scoreSpan.textContent = '0';
@@ -796,6 +796,41 @@ document.addEventListener('resetGame', () => {
         tiles.forEach(tile => {
             tile.classList.remove('revealed');
             tile.classList.remove('success-animation');
+            tile.classList.remove('correct');
+            tile.textContent = '';  // Clear any revealed country names
         });
+    }
+
+    // Clear input field
+    const guessInput = document.getElementById('guess-input');
+    if (guessInput) guessInput.value = '';
+
+    // Hide game over modal if visible
+    const gameOverModal = document.getElementById('game-over');
+    if (gameOverModal) gameOverModal.classList.add('hidden');
+
+    // Reset any popups
+    const popups = document.querySelectorAll('.popup');
+    popups.forEach(popup => popup.classList.add('hidden'));
+
+    // Enable guess input and submit button
+    if (guessInput) guessInput.disabled = false;
+    const submitButton = document.getElementById('submit-guess');
+    if (submitButton) submitButton.disabled = false;
+
+    // Reset tiles container
+    const tilesContainer = document.querySelector('.tiles-container');
+    if (tilesContainer) {
+        const tilesWrapper = tilesContainer.querySelector('.tiles-wrapper');
+        if (tilesWrapper) {
+            tilesWrapper.innerHTML = '';
+            // Recreate initial tiles
+            for (let i = 1; i <= 100; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'country-tile';
+                tile.dataset.position = i;
+                tilesWrapper.appendChild(tile);
+            }
+        }
     }
 }); 
