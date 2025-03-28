@@ -495,8 +495,9 @@ class FirebaseUserManager {
             }
 
             // Initialize stats if they don't exist
-            const stats = userData.stats || {};
-            let { currentStreak = 0, bestStreak = 0 } = stats;
+            const currentStats = userData.stats || {};
+            let currentStreak = currentStats.currentStreak || 0;
+            let bestStreak = currentStats.bestStreak || 0;
 
             if (!lastPlayedDate) {
                 // First time playing
@@ -519,31 +520,26 @@ class FirebaseUserManager {
                 }
             }
 
-            // Prepare the update data
-            const updateData = {
-                lastPlayedDate: now.toISOString()
+            // Create a complete stats object that preserves existing stats
+            const updatedStats = {
+                ...currentStats,
+                currentStreak: currentStreak,
+                bestStreak: bestStreak,
+                gamesPlayed: currentStats.gamesPlayed || 0,
+                highScore: currentStats.highScore || 0,
+                categoryStats: currentStats.categoryStats || {}
             };
 
-            // Only update stats if they've changed
-            if (currentStreak !== userData.stats?.currentStreak || bestStreak !== userData.stats?.bestStreak) {
-                updateData['stats'] = {
-                    ...(userData.stats || {}),
-                    currentStreak: currentStreak,
-                    bestStreak: bestStreak
-                };
-            }
+            // Update the document with the complete stats object
+            await userRef.update({
+                lastPlayedDate: now.toISOString(),
+                stats: updatedStats
+            });
 
-            // Update the document
-            await userRef.update(updateData);
             console.log('Streak updated successfully:', { currentStreak, bestStreak });
 
             // Update local data
-            if (userData.stats) {
-                userData.stats.currentStreak = currentStreak;
-                userData.stats.bestStreak = bestStreak;
-            } else {
-                userData.stats = { currentStreak, bestStreak };
-            }
+            userData.stats = updatedStats;
             userData.lastPlayedDate = now.toISOString();
             this.userData = userData;
             this.updateUI();
