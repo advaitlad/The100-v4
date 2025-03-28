@@ -961,11 +961,11 @@ async function handleCategorySelection(category) {
                 <div class="modal-footer">
                     <button class="modal-btn cancel">
                         <i class="fas fa-times"></i>
-                        No, Continue Playing
+                        Continue Playing
                     </button>
                     <button class="modal-btn confirm">
                         <i class="fas fa-check"></i>
-                        Yes, Switch Category
+                        Switch Category
                     </button>
                 </div>
             </div>
