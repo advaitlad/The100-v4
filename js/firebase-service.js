@@ -6,15 +6,26 @@ class FirebaseUserManager {
         this.currentUser = null;
         this.isGuest = false;
         this.userData = null;
+        this.currentStreak = 0;
+        this.bestStreak = 0;
+
+        // Add loading state to profile toggle button
+        const profileToggle = document.querySelector('.profile-toggle');
+        if (profileToggle) {
+            profileToggle.classList.add('loading');
+            profileToggle.textContent = '';
+        }
+
         this.setupAuthListeners();
     }
 
     setupAuthListeners() {
         // Use window.auth to ensure we're using the globally initialized Firebase auth
         this.auth.onAuthStateChanged(async (user) => {
+            this.currentUser = user;
+            
             if (user) {
                 console.log('User logged in:', user.uid);
-                this.currentUser = user;
                 try {
                     // Get user data from Firestore
                     const doc = await this.db.collection('users').doc(user.uid).get();
@@ -24,6 +35,8 @@ class FirebaseUserManager {
                         // Create new user document if it doesn't exist
                         await this.createNewUser();
                     }
+                    this.currentStreak = this.userData.currentStreak || 0;
+                    this.bestStreak = this.userData.bestStreak || 0;
                     this.updateUI();
                 } catch (error) {
                     console.error('Error loading user data:', error);
@@ -32,6 +45,8 @@ class FirebaseUserManager {
                 console.log('User logged out');
                 this.currentUser = null;
                 this.userData = null;
+                this.currentStreak = 0;
+                this.bestStreak = 0;
                 this.updateUI();
                 
                 // Dispatch resetGame event with preserveTiles flag
@@ -41,6 +56,20 @@ class FirebaseUserManager {
                     } 
                 });
                 document.dispatchEvent(resetEvent);
+            }
+            
+            // Update UI after auth state change
+            this.updateUI();
+            
+            // Initialize game elements if needed
+            if (typeof initializeTiles === 'function') {
+                initializeTiles();
+            }
+            
+            // Remove loading state from profile toggle
+            const profileToggle = document.querySelector('.profile-toggle');
+            if (profileToggle) {
+                profileToggle.classList.remove('loading');
             }
         });
     }
