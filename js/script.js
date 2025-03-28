@@ -904,7 +904,7 @@ async function handleCategorySelection(category) {
     }
 
     // If a game is in progress, show confirmation dialog
-    if (gameInProgress && currentCategory !== category) {
+    if (isGameInProgress() && currentCategory !== category) {
         if (!confirm('Starting a new category will reset your current game. Continue?')) {
             return;
         }
