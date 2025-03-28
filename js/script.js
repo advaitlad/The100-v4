@@ -630,8 +630,8 @@ function showConfirmationDialog(callback) {
         <h3>End Current Game?</h3>
         <p>Switching categories will end your current game. Are you sure?</p>
         <div class="confirm-buttons">
-            <button class="confirm-btn cancel">No, Continue Playing</button>
-            <button class="confirm-btn confirm">Yes, Switch Category</button>
+            <button class="confirm-btn cancel">Cancel</button>
+            <button class="confirm-btn confirm">Switch Category</button>
         </div>
     `;
     
@@ -1013,6 +1013,7 @@ async function handleCategorySelection(category) {
     if (sidePanel) {
         sidePanel.classList.remove('active');
         // Also remove the side panel active class from game container
+
         const gameContainer = document.querySelector('.game-container');
         if (gameContainer) {
             gameContainer.classList.remove('side-panel-active');
