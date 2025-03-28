@@ -1,8 +1,8 @@
 // Initialize Firebase
 class FirebaseUserManager {
     constructor() {
-        this.auth = window.auth;
-        this.db = window.db;
+        this.auth = firebase.auth();
+        this.db = firebase.firestore();
         this.currentUser = null;
         this.isGuest = false;
         this.userData = null;
@@ -12,13 +12,33 @@ class FirebaseUserManager {
     setupAuthListeners() {
         // Use window.auth to ensure we're using the globally initialized Firebase auth
         this.auth.onAuthStateChanged(async (user) => {
-            this.currentUser = user;
-            const usernameDisplay = document.getElementById('username-display');
-            if (usernameDisplay) {
-                usernameDisplay.textContent = user ? user.displayName || user.email : 'Guest';
+            if (user) {
+                console.log('User logged in:', user.uid);
+                this.currentUser = user;
+                try {
+                    // Get user data from Firestore
+                    const doc = await this.db.collection('users').doc(user.uid).get();
+                    if (doc.exists) {
+                        this.userData = doc.data();
+                    } else {
+                        // Create new user document if it doesn't exist
+                        await this.createNewUser();
+                    }
+                    this.updateUI();
+                    
+                    // Initialize game elements
+                    if (typeof initializeTiles === 'function') {
+                        initializeTiles();
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            } else {
+                console.log('User logged out');
+                this.currentUser = null;
+                this.userData = null;
+                this.updateUI();
             }
-            await this.loadUserData();
-            await this.checkAndUpdateStreak();
         });
     }
 

@@ -107,14 +107,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeTiles() {
-    if (!tilesWrapper) return; // Guard clause
+    const tilesWrapper = document.querySelector('.tiles-wrapper');
+    if (!tilesWrapper) {
+        console.error('Tiles wrapper not found');
+        return;
+    }
     
     tilesWrapper.innerHTML = '';
-    for (let i = 0; i < 100; i++) {
+    tilesWrapper.style.transform = 'translateY(0)'; // Reset scroll position
+    
+    for (let i = 1; i <= 100; i++) {
         const tile = document.createElement('div');
         tile.className = 'country-tile';
+        tile.dataset.position = i;
         tile.innerHTML = `
-            <span class="position">#${i + 1}</span>
+            <span class="position">#${i}</span>
             <span class="name">🔒</span>
             <span class="area">—</span>
         `;
