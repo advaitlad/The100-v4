@@ -64,6 +64,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Close profile modal
+    closeProfile?.addEventListener('click', () => {
+        profileModal?.classList.add('hidden');
+        // Remove overlay
+        const overlay = document.querySelector('.overlay');
+        if (overlay) overlay.remove();
+    });
+
+    // Function to close profile modal
+    function closeProfileModal() {
+        profileModal?.classList.add('hidden');
+        const overlay = document.querySelector('.overlay');
+        if (overlay) overlay.remove();
+        // Remove the escape key listener
+        document.removeEventListener('keydown', profileEscapeListener);
+    }
+
+    // Function to handle escape key for profile modal
+    function profileEscapeListener(e) {
+        if (e.key === 'Escape' && profileModal && !profileModal.classList.contains('hidden')) {
+            closeProfileModal();
+        }
+    }
+
     // Profile toggle click handler
     profileToggle?.addEventListener('click', () => {
         console.log('Profile toggle clicked'); // Debug log
@@ -111,20 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.className = 'overlay active';
             document.body.appendChild(overlay);
             
+            // Add escape key listener for profile modal
+            document.addEventListener('keydown', profileEscapeListener);
+            
             // Close on overlay click
-            overlay.addEventListener('click', () => {
-                profileModal?.classList.add('hidden');
-                overlay.remove();
-            });
+            overlay.addEventListener('click', closeProfileModal);
         }
-    });
-
-    // Close profile modal
-    closeProfile?.addEventListener('click', () => {
-        profileModal?.classList.add('hidden');
-        // Remove overlay
-        const overlay = document.querySelector('.overlay');
-        if (overlay) overlay.remove();
     });
 
     // Show signup modal
