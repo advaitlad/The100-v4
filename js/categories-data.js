@@ -530,7 +530,7 @@ window.gameData = {
         title: 'Netflix Top 100',
         data: netflixTop100,
         unit: 'M views',
-        icon: 'fab fa-netflix',
+        icon: 'fas fa-tv',
         description: 'Guess the most watched Netflix movies and shows based on their viewing hours in millions.'
     }
 };
