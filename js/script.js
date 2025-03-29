@@ -1267,6 +1267,18 @@ function closeTutorialModal() {
     if (overlay) overlay.remove();
     // Reset scroll position
     tutorialModal.scrollTop = 0;
+    // Remove escape key listener
+    document.removeEventListener('keydown', escapeListener);
+}
+
+// Close login modal function
+function closeLoginModal() {
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal) loginModal.classList.add('hidden');
+    const overlay = document.querySelector('.overlay');
+    if (overlay) overlay.remove();
+    // Remove escape key listener
+    document.removeEventListener('keydown', escapeKeyListener);
 }
 
 // Add event listener for game reset
