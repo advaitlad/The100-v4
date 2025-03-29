@@ -72,29 +72,18 @@ function initializeDOMElements() {
     const tutorialBtn = document.getElementById('tutorial-btn');
     tutorialBtn?.addEventListener('click', () => {
         const tutorialModal = document.getElementById('tutorial-modal');
-        const profileModal = document.getElementById('profile-modal');
-        const loginModal = document.getElementById('login-modal');
         if (!tutorialModal) return;
         
-        // If modal is already visible, close it
+        // If tutorial modal is already visible, just close it
         if (!tutorialModal.classList.contains('hidden')) {
             closeTutorialModal();
             return;
         }
         
-        // Close other modals if they're open
-        if (profileModal && !profileModal.classList.contains('hidden')) {
-            closeProfileModal();
-        }
-        if (loginModal && !loginModal.classList.contains('hidden')) {
-            closeLoginModal();
-        }
+        // Close all other modals before showing tutorial
+        closeAllModals();
         
-        // Remove any existing overlays
-        const existingOverlays = document.querySelectorAll('.overlay');
-        existingOverlays.forEach(overlay => overlay.remove());
-        
-        // Create new overlay
+        // Show tutorial modal
         const overlay = document.createElement('div');
         overlay.className = 'overlay active';
         document.body.appendChild(overlay);
@@ -116,15 +105,8 @@ function initializeDOMElements() {
     closeTutorialBtn?.addEventListener('click', closeTutorialModal);
 
     // Side panel events
-    categoriesToggle?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleSidePanel();
-    });
-    
-    document.querySelector('.close-side-panel')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleSidePanel();
-    });
+    categoriesToggle?.addEventListener('click', toggleSidePanel);
+    document.querySelector('.close-side-panel')?.addEventListener('click', toggleSidePanel);
     
     // Category search
     categorySearch?.addEventListener('input', filterCategories);
@@ -713,45 +695,53 @@ function showConfirmationDialog(callback) {
     document.addEventListener('keydown', escapeListener);
 }
 
-function toggleSidePanel() {
-    // Check if any modal is active
+// Function to close all active modals
+function closeAllModals() {
+    // Close tutorial modal if it's open
     const tutorialModal = document.getElementById('tutorial-modal');
+    if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
+        closeTutorialModal();
+    }
+
+    // Close profile modal if it's open
     const profileModal = document.getElementById('profile-modal');
+    if (profileModal && !profileModal.classList.contains('hidden')) {
+        closeProfileModal();
+    }
+
+    // Close login modal if it's open
     const loginModal = document.getElementById('login-modal');
+    if (loginModal && !loginModal.classList.contains('hidden')) {
+        closeLoginModal();
+    }
 
-    // If tutorial modal or profile modal is active, don't allow toggling categories
-    if ((tutorialModal && !tutorialModal.classList.contains('hidden')) || 
-        (profileModal && !profileModal.classList.contains('hidden')) ||
-        (loginModal && !loginModal.classList.contains('hidden'))) {
-        
-        // Find the active modal
-        const activeModal = [tutorialModal, profileModal, loginModal].find(modal => 
-            modal && !modal.classList.contains('hidden')
-        );
+    // Close categories panel if it's open
+    const sidePanel = document.querySelector('.side-panel');
+    if (sidePanel && sidePanel.classList.contains('active')) {
+        sidePanel.classList.remove('active');
+        document.querySelector('.game-container').classList.remove('side-panel-active');
+    }
 
-        // Add shake animation to active modal
-        if (activeModal) {
-            activeModal.classList.add('shake-animation');
-            // Remove the animation class after it completes
-            setTimeout(() => {
-                activeModal.classList.remove('shake-animation');
-            }, 500); // Match this to the animation duration
-        }
+    // Remove any existing overlays
+    const existingOverlays = document.querySelectorAll('.overlay');
+    existingOverlays.forEach(overlay => overlay.remove());
+}
 
-        // Show a small popup notification
-        const popup = document.getElementById('popup');
-        if (popup) {
-            popup.textContent = 'Please close the active modal first';
-            popup.classList.remove('hidden');
-            setTimeout(() => {
-                popup.classList.add('hidden');
-            }, 2000);
-        }
+function toggleSidePanel() {
+    // If the side panel is already active, just close it
+    const sidePanel = document.querySelector('.side-panel');
+    if (sidePanel.classList.contains('active')) {
+        sidePanel.classList.remove('active');
+        document.querySelector('.game-container').classList.remove('side-panel-active');
         return;
     }
 
-    sidePanel.classList.toggle('active');
-    document.querySelector('.game-container').classList.toggle('side-panel-active');
+    // Close all other modals before opening categories
+    closeAllModals();
+
+    // Now open the side panel
+    sidePanel.classList.add('active');
+    document.querySelector('.game-container').classList.add('side-panel-active');
 }
 
 function initializeCategoriesList() {

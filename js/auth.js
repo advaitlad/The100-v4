@@ -351,12 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Profile toggle click handler
     profileToggle?.addEventListener('click', () => {
         console.log('Profile toggle clicked'); // Debug log
-        
-        // Close tutorial modal if it's open
-        const tutorialModal = document.getElementById('tutorial-modal');
-        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
-            window.closeTutorialModal();
-        }
 
         if (!window.userManager?.currentUser) {
             // If login modal is visible, close it
@@ -366,17 +360,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             showLoginModal();
         } else {
-            // Handle profile modal toggle for logged in users
-            if (!profileModal?.classList.contains('hidden')) {
+            // If profile modal is already visible, just close it
+            if (profileModal && !profileModal.classList.contains('hidden')) {
                 closeProfileModal();
                 return;
             }
             
-            // Remove any existing overlays first
-            const existingOverlays = document.querySelectorAll('.overlay');
-            existingOverlays.forEach(overlay => overlay.remove());
+            // Close all other modals before showing profile
+            window.closeAllModals();
             
-            // Show profile modal and ensure it's visible
+            // Show profile modal
             if (profileModal) {
                 profileModal.style.display = 'block'; // Ensure it's displayed
                 profileModal.classList.remove('hidden');
