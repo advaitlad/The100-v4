@@ -63,12 +63,20 @@ function initializeDOMElements() {
     const tutorialBtn = document.getElementById('tutorial-btn');
     tutorialBtn?.addEventListener('click', () => {
         const tutorialModal = document.getElementById('tutorial-modal');
+        const profileModal = document.getElementById('profile-modal');
         if (!tutorialModal) return;
         
         // If modal is already visible, close it
         if (!tutorialModal.classList.contains('hidden')) {
             closeTutorialModal();
             return;
+        }
+        
+        // Close profile modal if it's open
+        if (profileModal && !profileModal.classList.contains('hidden')) {
+            profileModal.classList.add('hidden');
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
         }
         
         // Remove any existing overlays
@@ -103,6 +111,21 @@ function initializeDOMElements() {
     // Category search
     categorySearch?.addEventListener('input', filterCategories);
     categorySearch?.addEventListener('keydown', handleCategoryKeyboard);
+
+    // Profile toggle click handler
+    profileToggle?.addEventListener('click', () => {
+        console.log('Profile toggle clicked'); // Debug log
+        const tutorialModal = document.getElementById('tutorial-modal');
+
+        // Close tutorial modal if it's open
+        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
+            closeTutorialModal();
+        }
+
+        if (!window.userManager?.currentUser) {
+            // ... existing code ...
+        }
+    });
 }
 
 // Wait for DOM to be ready before initializing
