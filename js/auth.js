@@ -85,15 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to show login modal
     function showLoginModal() {
-        // Close tutorial modal if it's open
-        const tutorialModal = document.getElementById('tutorial-modal');
-        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
-            window.closeTutorialModal();
-        }
-
-        // Remove any existing overlays first
-        const existingOverlays = document.querySelectorAll('.overlay');
-        existingOverlays.forEach(overlay => overlay.remove());
+        // Close all other modals first
+        window.closeAllModals();
         
         // Show login modal
         loginModal?.classList.remove('hidden');
@@ -113,13 +106,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show signup modal
     showSignup?.addEventListener('click', (e) => {
         e.preventDefault();
-        loginModal?.classList.add('hidden');
+        // Close all other modals first
+        window.closeAllModals();
+        
         signupModal?.classList.remove('hidden');
+        
+        // Add new overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay active';
+        document.body.appendChild(overlay);
+        
+        // Close on overlay click
+        const closeSignupModal = () => {
+            signupModal?.classList.add('hidden');
+            overlay?.remove();
+            document.removeEventListener('keydown', signupEscapeListener);
+        };
+        
+        overlay.addEventListener('click', closeSignupModal);
+        
+        // Add escape key listener
+        const signupEscapeListener = (e) => {
+            if (e.key === 'Escape') {
+                closeSignupModal();
+            }
+        };
+        document.addEventListener('keydown', signupEscapeListener);
     });
 
-    // Show login modal
+    // Show login modal from signup
     showLogin?.addEventListener('click', (e) => {
         e.preventDefault();
+        // Close signup modal and show login
         signupModal?.classList.add('hidden');
         showLoginModal();
     });
