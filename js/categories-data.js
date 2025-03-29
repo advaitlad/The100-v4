@@ -461,7 +461,7 @@ const netflixTop100 = [
     { name: "Thunder Force", value: 61.00 },
     { name: "To All the Boys: Always and Forever", value: 60.00 },
     { name: "Triple Frontier", value: 59.00 },
-    { name: "Tyler Perry’s A Fall From Grace", value: 58.00 },
+    { name: "Tyler Perry's A Fall From Grace", value: 58.00 },
     { name: "We Can Be Heroes", value: 57.00 },
     { name: "Wish Dragon", value: 56.00 },
     { name: "Yes Day", value: 55.00 },
@@ -530,7 +530,7 @@ window.gameData = {
         title: 'Netflix Top 100',
         data: netflixTop100,
         unit: 'M views',
-        icon: 'fas fa-film',
+        icon: 'fab fa-netflix',
         description: 'Guess the most watched Netflix movies and shows based on their viewing hours in millions.'
     }
 };
