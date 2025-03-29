@@ -14,6 +14,11 @@ let sidePanel, categoriesToggle, categoriesList, categorySearch;
 
 let selectedCategoryIndex = -1;
 
+// Global variables for modal event listeners
+let tutorialEscapeListener;
+let profileEscapeListener;
+let loginEscapeListener;
+
 // Initialize DOM elements
 function initializeDOMElements() {
     // Get DOM element references
@@ -73,15 +78,9 @@ function initializeDOMElements() {
             return;
         }
         
-        // Close profile modal if it's open
-        if (profileModal && !profileModal.classList.contains('hidden')) {
-            closeProfileModal();
-        }
-
-        // Close login modal if it's open
-        if (loginModal && !loginModal.classList.contains('hidden')) {
-            closeLoginModal();
-        }
+        // Close other modals if they're open
+        closeProfileModal();
+        closeLoginModal();
         
         // Remove any existing overlays
         const existingOverlays = document.querySelectorAll('.overlay');
@@ -94,15 +93,15 @@ function initializeDOMElements() {
         tutorialModal.classList.remove('hidden');
         tutorialModal.scrollTop = 0;
 
+        // Set up event listeners
         overlay.addEventListener('click', closeTutorialModal);
         
-        const escapeListener = (e) => {
+        tutorialEscapeListener = (e) => {
             if (e.key === 'Escape') {
                 closeTutorialModal();
-                document.removeEventListener('keydown', escapeListener);
             }
         };
-        document.addEventListener('keydown', escapeListener);
+        document.addEventListener('keydown', tutorialEscapeListener);
     });
 
     const closeTutorialBtn = document.getElementById('close-tutorial');
@@ -122,9 +121,7 @@ function initializeDOMElements() {
         const tutorialModal = document.getElementById('tutorial-modal');
 
         // Close tutorial modal if it's open
-        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
-            closeTutorialModal();
-        }
+        closeTutorialModal();
 
         if (!window.userManager?.currentUser) {
             // If login modal is visible, close it
@@ -149,7 +146,12 @@ function initializeDOMElements() {
             overlay.addEventListener('click', closeLoginModal);
             
             // Add escape key listener
-            document.addEventListener('keydown', escapeKeyListener);
+            loginEscapeListener = (e) => {
+                if (e.key === 'Escape') {
+                    closeLoginModal();
+                }
+            };
+            document.addEventListener('keydown', loginEscapeListener);
         } else {
             // Handle profile modal toggle for logged in users
             if (!profileModal?.classList.contains('hidden')) {
@@ -169,6 +171,11 @@ function initializeDOMElements() {
             document.body.appendChild(overlay);
             
             // Add escape key listener for profile modal
+            profileEscapeListener = (e) => {
+                if (e.key === 'Escape') {
+                    closeProfileModal();
+                }
+            };
             document.addEventListener('keydown', profileEscapeListener);
             
             // Close on overlay click
@@ -1262,23 +1269,44 @@ function getCategoryIcon(category) {
 
 function closeTutorialModal() {
     const tutorialModal = document.getElementById('tutorial-modal');
+    if (tutorialModal) {
+        tutorialModal.classList.add('hidden');
+        tutorialModal.scrollTop = 0;
+    }
     const overlay = document.querySelector('.overlay');
-    tutorialModal.classList.add('hidden');
     if (overlay) overlay.remove();
-    // Reset scroll position
-    tutorialModal.scrollTop = 0;
     // Remove escape key listener
-    document.removeEventListener('keydown', escapeListener);
+    if (tutorialEscapeListener) {
+        document.removeEventListener('keydown', tutorialEscapeListener);
+    }
+}
+
+// Close profile modal function
+function closeProfileModal() {
+    const profileModal = document.getElementById('profile-modal');
+    if (profileModal) {
+        profileModal.classList.add('hidden');
+    }
+    const overlay = document.querySelector('.overlay');
+    if (overlay) overlay.remove();
+    // Remove escape key listener
+    if (profileEscapeListener) {
+        document.removeEventListener('keydown', profileEscapeListener);
+    }
 }
 
 // Close login modal function
 function closeLoginModal() {
     const loginModal = document.getElementById('login-modal');
-    if (loginModal) loginModal.classList.add('hidden');
+    if (loginModal) {
+        loginModal.classList.add('hidden');
+    }
     const overlay = document.querySelector('.overlay');
     if (overlay) overlay.remove();
     // Remove escape key listener
-    document.removeEventListener('keydown', escapeKeyListener);
+    if (loginEscapeListener) {
+        document.removeEventListener('keydown', loginEscapeListener);
+    }
 }
 
 // Add event listener for game reset
