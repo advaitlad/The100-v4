@@ -59,6 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Function to handle escape key for signup modal
+    const signupEscapeListener = (e) => {
+        if (e.key === 'Escape') {
+            closeSignupModal();
+        }
+    };
+
     // Function to close login modal
     function closeLoginModal() {
         loginModal?.classList.add('hidden');
@@ -66,6 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overlay) overlay.remove();
         // Remove the escape key listener
         document.removeEventListener('keydown', escapeKeyListener);
+    }
+
+    // Function to close signup modal
+    function closeSignupModal() {
+        signupModal?.classList.add('hidden');
+        const overlay = document.querySelector('.overlay');
+        if (overlay) overlay.remove();
+        // Remove the escape key listener
+        document.removeEventListener('keydown', signupEscapeListener);
     }
 
     // Function to close profile modal
