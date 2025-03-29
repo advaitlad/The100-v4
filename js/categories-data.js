@@ -530,7 +530,7 @@ window.gameData = {
         title: "Top 100 Most Watched Movies on Netflix",
         data: netflixTop100,
         unit: 'M hours',
-        icon: 'fas fa-tv'
+        icon: 'fa-solid fa-tv'
     }
 };
 
