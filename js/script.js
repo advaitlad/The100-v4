@@ -75,16 +75,12 @@ function initializeDOMElements() {
         
         // Close profile modal if it's open
         if (profileModal && !profileModal.classList.contains('hidden')) {
-            profileModal.classList.add('hidden');
-            const existingOverlays = document.querySelectorAll('.overlay');
-            existingOverlays.forEach(overlay => overlay.remove());
+            closeProfileModal();
         }
 
         // Close login modal if it's open
         if (loginModal && !loginModal.classList.contains('hidden')) {
-            loginModal.classList.add('hidden');
-            const existingOverlays = document.querySelectorAll('.overlay');
-            existingOverlays.forEach(overlay => overlay.remove());
+            closeLoginModal();
         }
         
         // Remove any existing overlays
@@ -155,7 +151,28 @@ function initializeDOMElements() {
             // Add escape key listener
             document.addEventListener('keydown', escapeKeyListener);
         } else {
-            // ... existing code ...
+            // Handle profile modal toggle for logged in users
+            if (!profileModal?.classList.contains('hidden')) {
+                closeProfileModal();
+                return;
+            }
+            
+            // Remove any existing overlays first
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Show profile modal
+            profileModal?.classList.remove('hidden');
+            // Add new overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            document.body.appendChild(overlay);
+            
+            // Add escape key listener for profile modal
+            document.addEventListener('keydown', profileEscapeListener);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', closeProfileModal);
         }
     });
 }
