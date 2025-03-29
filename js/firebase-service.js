@@ -83,12 +83,12 @@ class FirebaseUserManager {
 
         try {
             const userDoc = await this.db.collection('users').doc(this.currentUser.uid).get();
-            if (userDoc.exists) {
-                this.userData = userDoc.data();
-                this.updateUI();
-            } else {
+        if (userDoc.exists) {
+            this.userData = userDoc.data();
+            this.updateUI();
+        } else {
                 // Create new user document if it doesn't exist
-                await this.createNewUser();
+            await this.createNewUser();
             }
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -260,7 +260,7 @@ class FirebaseUserManager {
                 });
                 
                 // Load user data
-                await this.loadUserData();
+            await this.loadUserData();
             }
             
             return true;
@@ -328,7 +328,7 @@ class FirebaseUserManager {
             }
 
             // Format the game result
-            const gameResult = {
+        const gameResult = {
                 category: category || 'unknown',
                 score: parseInt(score) || 0,
                 guesses: Array.isArray(guesses) ? guesses : [],
@@ -337,7 +337,7 @@ class FirebaseUserManager {
 
             // Get existing user data
             const userData = userDoc.data();
-            
+
             // Ensure stats object exists
             const stats = userData.stats || {};
             const categoryStats = stats.categoryStats || {};
@@ -373,7 +373,7 @@ class FirebaseUserManager {
                 ...updateData,
                 gameHistory: [...(userData.gameHistory || []), gameResult]
             };
-            this.updateUI();
+        this.updateUI();
 
         } catch (error) {
             console.error('Error saving game result:', error);

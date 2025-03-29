@@ -64,6 +64,7 @@ function initializeDOMElements() {
     tutorialBtn?.addEventListener('click', () => {
         const tutorialModal = document.getElementById('tutorial-modal');
         const profileModal = document.getElementById('profile-modal');
+        const loginModal = document.getElementById('login-modal');
         if (!tutorialModal) return;
         
         // If modal is already visible, close it
@@ -75,6 +76,13 @@ function initializeDOMElements() {
         // Close profile modal if it's open
         if (profileModal && !profileModal.classList.contains('hidden')) {
             profileModal.classList.add('hidden');
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
+        }
+
+        // Close login modal if it's open
+        if (loginModal && !loginModal.classList.contains('hidden')) {
+            loginModal.classList.add('hidden');
             const existingOverlays = document.querySelectorAll('.overlay');
             existingOverlays.forEach(overlay => overlay.remove());
         }
@@ -123,6 +131,30 @@ function initializeDOMElements() {
         }
 
         if (!window.userManager?.currentUser) {
+            // If login modal is visible, close it
+            if (loginModal && !loginModal.classList.contains('hidden')) {
+                closeLoginModal();
+                return;
+            }
+
+            // Remove any existing overlays first
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Show login modal
+            loginModal?.classList.remove('hidden');
+            
+            // Add new overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            document.body.appendChild(overlay);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', closeLoginModal);
+            
+            // Add escape key listener
+            document.addEventListener('keydown', escapeKeyListener);
+        } else {
             // ... existing code ...
         }
     });
