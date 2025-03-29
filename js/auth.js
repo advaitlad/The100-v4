@@ -88,60 +88,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Profile toggle click handler
-    profileToggle?.addEventListener('click', () => {
-        console.log('Profile toggle clicked'); // Debug log
-        if (!window.userManager?.currentUser) {
-            // If login modal is visible, close it
-            if (loginModal && !loginModal.classList.contains('hidden')) {
-                closeLoginModal();
-                return;
-            }
-
-            // Remove any existing overlays first
-            const existingOverlays = document.querySelectorAll('.overlay');
-            existingOverlays.forEach(overlay => overlay.remove());
-            
-            // Show login modal
-            loginModal?.classList.remove('hidden');
-            
-            // Add new overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay active';
-            document.body.appendChild(overlay);
-            
-            // Close on overlay click
-            overlay.addEventListener('click', closeLoginModal);
-            
-            // Add escape key listener
-            document.addEventListener('keydown', escapeKeyListener);
-        } else {
-            // Handle profile modal toggle for logged in users
-            if (!profileModal?.classList.contains('hidden')) {
-                profileModal?.classList.add('hidden');
-                const overlay = document.querySelector('.overlay');
-                if (overlay) overlay.remove();
-                return;
-            }
-            
-            // Remove any existing overlays first
-            const existingOverlays = document.querySelectorAll('.overlay');
-            existingOverlays.forEach(overlay => overlay.remove());
-            
-            // Show profile modal
-            profileModal?.classList.remove('hidden');
-            // Add new overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay active';
-            document.body.appendChild(overlay);
-            
-            // Add escape key listener for profile modal
-            document.addEventListener('keydown', profileEscapeListener);
-            
-            // Close on overlay click
-            overlay.addEventListener('click', closeProfileModal);
+    // Function to show login modal
+    function showLoginModal() {
+        // Close tutorial modal if it's open
+        const tutorialModal = document.getElementById('tutorial-modal');
+        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
+            window.closeTutorialModal();
         }
-    });
+
+        // Remove any existing overlays first
+        const existingOverlays = document.querySelectorAll('.overlay');
+        existingOverlays.forEach(overlay => overlay.remove());
+        
+        // Show login modal
+        loginModal?.classList.remove('hidden');
+        
+        // Add new overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay active';
+        document.body.appendChild(overlay);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', closeLoginModal);
+        
+        // Add escape key listener
+        document.addEventListener('keydown', escapeKeyListener);
+    }
 
     // Show signup modal
     showSignup?.addEventListener('click', (e) => {
@@ -154,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showLogin?.addEventListener('click', (e) => {
         e.preventDefault();
         signupModal?.classList.add('hidden');
-        loginModal?.classList.remove('hidden');
+        showLoginModal();
     });
 
     // Handle login form submission
@@ -378,6 +350,44 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove overlay
             const overlay = document.querySelector('.overlay');
             if (overlay) overlay.remove();
+        }
+    });
+
+    // Profile toggle click handler
+    profileToggle?.addEventListener('click', () => {
+        console.log('Profile toggle clicked'); // Debug log
+        if (!window.userManager?.currentUser) {
+            // If login modal is visible, close it
+            if (loginModal && !loginModal.classList.contains('hidden')) {
+                closeLoginModal();
+                return;
+            }
+            showLoginModal();
+        } else {
+            // Handle profile modal toggle for logged in users
+            if (!profileModal?.classList.contains('hidden')) {
+                profileModal?.classList.add('hidden');
+                const overlay = document.querySelector('.overlay');
+                if (overlay) overlay.remove();
+                return;
+            }
+            
+            // Remove any existing overlays first
+            const existingOverlays = document.querySelectorAll('.overlay');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Show profile modal
+            profileModal?.classList.remove('hidden');
+            // Add new overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            document.body.appendChild(overlay);
+            
+            // Add escape key listener for profile modal
+            document.addEventListener('keydown', profileEscapeListener);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', closeProfileModal);
         }
     });
 }); 

@@ -79,8 +79,12 @@ function initializeDOMElements() {
         }
         
         // Close other modals if they're open
-        closeProfileModal();
-        closeLoginModal();
+        if (profileModal && !profileModal.classList.contains('hidden')) {
+            closeProfileModal();
+        }
+        if (loginModal && !loginModal.classList.contains('hidden')) {
+            closeLoginModal();
+        }
         
         // Remove any existing overlays
         const existingOverlays = document.querySelectorAll('.overlay');
