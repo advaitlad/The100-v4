@@ -351,6 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Profile toggle click handler
     profileToggle?.addEventListener('click', () => {
         console.log('Profile toggle clicked'); // Debug log
+        
+        // Close tutorial modal if it's open
+        const tutorialModal = document.getElementById('tutorial-modal');
+        if (tutorialModal && !tutorialModal.classList.contains('hidden')) {
+            window.closeTutorialModal();
+        }
+
         if (!window.userManager?.currentUser) {
             // If login modal is visible, close it
             if (loginModal && !loginModal.classList.contains('hidden')) {
@@ -361,9 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Handle profile modal toggle for logged in users
             if (!profileModal?.classList.contains('hidden')) {
-                profileModal?.classList.add('hidden');
-                const overlay = document.querySelector('.overlay');
-                if (overlay) overlay.remove();
+                closeProfileModal();
                 return;
             }
             
@@ -371,18 +376,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingOverlays = document.querySelectorAll('.overlay');
             existingOverlays.forEach(overlay => overlay.remove());
             
-            // Show profile modal
-            profileModal?.classList.remove('hidden');
-            // Add new overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay active';
-            document.body.appendChild(overlay);
-            
-            // Add escape key listener for profile modal
-            document.addEventListener('keydown', profileEscapeListener);
-            
-            // Close on overlay click
-            overlay.addEventListener('click', closeProfileModal);
+            // Show profile modal and ensure it's visible
+            if (profileModal) {
+                profileModal.style.display = 'block'; // Ensure it's displayed
+                profileModal.classList.remove('hidden');
+                
+                // Add new overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay active';
+                document.body.appendChild(overlay);
+                
+                // Add escape key listener for profile modal
+                document.addEventListener('keydown', profileEscapeListener);
+                
+                // Close on overlay click
+                overlay.addEventListener('click', closeProfileModal);
+            } else {
+                console.error('Profile modal element not found');
+            }
         }
     });
 }); 
