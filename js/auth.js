@@ -103,24 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('keydown', escapeKeyListener);
     }
 
-    // Function to close signup modal
-    function closeSignupModal() {
-        signupModal?.classList.add('hidden');
-        const overlay = document.querySelector('.overlay');
-        if (overlay) overlay.remove();
-        document.removeEventListener('keydown', signupEscapeListener);
-    }
-
-    // Function to handle escape key for signup modal
-    const signupEscapeListener = (e) => {
-        if (e.key === 'Escape') {
-            closeSignupModal();
-        }
-    };
-
-    // Show signup modal
-    showSignup?.addEventListener('click', (e) => {
-        e.preventDefault();
+    // Function to show signup modal
+    function showSignupModal() {
         // Close all other modals first
         window.closeAllModals();
         
@@ -136,7 +120,56 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add escape key listener
         document.addEventListener('keydown', signupEscapeListener);
+    }
+
+    // Show signup modal
+    showSignup?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSignupModal();
     });
+
+    // Add back arrow to signup modal if it doesn't exist
+    const signupModalHeader = signupModal?.querySelector('.modal-header');
+    if (signupModalHeader && !signupModalHeader.querySelector('.back-arrow')) {
+        const backArrow = document.createElement('button');
+        backArrow.className = 'back-arrow';
+        backArrow.innerHTML = '<i class="fas fa-arrow-left"></i>';
+        backArrow.style.cssText = `
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        `;
+        
+        // Add hover styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .back-arrow:hover {
+                background: #f3f4f6;
+                color: #374151;
+            }
+            .back-arrow:active {
+                transform: translateY(-50%) scale(0.95);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add click handler
+        backArrow.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSignupModal();
+            showLoginModal();
+        });
+        
+        signupModalHeader.appendChild(backArrow);
+    }
 
     // Show login modal from signup
     showLogin?.addEventListener('click', (e) => {
