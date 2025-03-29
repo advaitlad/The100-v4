@@ -116,8 +116,15 @@ function initializeDOMElements() {
     closeTutorialBtn?.addEventListener('click', closeTutorialModal);
 
     // Side panel events
-    categoriesToggle?.addEventListener('click', toggleSidePanel);
-    document.querySelector('.close-side-panel')?.addEventListener('click', toggleSidePanel);
+    categoriesToggle?.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleSidePanel();
+    });
+    
+    document.querySelector('.close-side-panel')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleSidePanel();
+    });
     
     // Category search
     categorySearch?.addEventListener('input', filterCategories);
@@ -707,6 +714,27 @@ function showConfirmationDialog(callback) {
 }
 
 function toggleSidePanel() {
+    // Check if any modal is active
+    const tutorialModal = document.getElementById('tutorial-modal');
+    const profileModal = document.getElementById('profile-modal');
+    const loginModal = document.getElementById('login-modal');
+
+    // If tutorial modal or profile modal is active, don't allow toggling categories
+    if ((tutorialModal && !tutorialModal.classList.contains('hidden')) || 
+        (profileModal && !profileModal.classList.contains('hidden')) ||
+        (loginModal && !loginModal.classList.contains('hidden'))) {
+        // Show a small popup notification
+        const popup = document.getElementById('popup');
+        if (popup) {
+            popup.textContent = 'Please close the active modal first';
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 2000);
+        }
+        return;
+    }
+
     sidePanel.classList.toggle('active');
     document.querySelector('.game-container').classList.toggle('side-panel-active');
 }
