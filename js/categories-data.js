@@ -527,10 +527,10 @@ window.gameData = {
         icon: 'fab fa-spotify'
     },
     netflix: {
-        title: "Top 100 Most Watched Movies on Netflix",
+        title: "Top 100 Most Watched\nMovies on Netflix",
         data: netflixTop100,
         unit: 'M hours',
-        icon: 'fas fa-play-circle',
+        icon: 'fas fa-solid fa-tv',
     }
 };
 
