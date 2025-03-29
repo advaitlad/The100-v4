@@ -103,6 +103,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('keydown', escapeKeyListener);
     }
 
+    // Function to close signup modal
+    function closeSignupModal() {
+        signupModal?.classList.add('hidden');
+        const overlay = document.querySelector('.overlay');
+        if (overlay) overlay.remove();
+        document.removeEventListener('keydown', signupEscapeListener);
+    }
+
+    // Function to handle escape key for signup modal
+    const signupEscapeListener = (e) => {
+        if (e.key === 'Escape') {
+            closeSignupModal();
+        }
+    };
+
     // Show signup modal
     showSignup?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -117,28 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(overlay);
         
         // Close on overlay click
-        const closeSignupModal = () => {
-            signupModal?.classList.add('hidden');
-            overlay?.remove();
-            document.removeEventListener('keydown', signupEscapeListener);
-        };
-        
         overlay.addEventListener('click', closeSignupModal);
         
         // Add escape key listener
-        const signupEscapeListener = (e) => {
-            if (e.key === 'Escape') {
-                closeSignupModal();
-            }
-        };
         document.addEventListener('keydown', signupEscapeListener);
     });
 
     // Show login modal from signup
     showLogin?.addEventListener('click', (e) => {
         e.preventDefault();
-        // Close signup modal and show login
-        signupModal?.classList.add('hidden');
+        closeSignupModal(); // Use the dedicated close function
         showLoginModal();
     });
 
@@ -237,11 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await window.userManager.signup(email, password, username);
-            signupModal?.classList.add('hidden');
+            closeSignupModal(); // Use the dedicated close function
             signupForm.reset();
-            // Remove overlay after signup
-            const overlay = document.querySelector('.overlay');
-            if (overlay) overlay.remove();
         } catch (error) {
             console.error('Signup error:', error);
             let errorMsg = 'Error creating account';

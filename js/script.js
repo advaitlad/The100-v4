@@ -715,6 +715,16 @@ function closeAllModals() {
         closeLoginModal();
     }
 
+    // Close signup modal if it's open
+    const signupModal = document.getElementById('signup-modal');
+    if (signupModal && !signupModal.classList.contains('hidden')) {
+        if (typeof closeSignupModal === 'function') {
+            closeSignupModal();
+        } else {
+            signupModal.classList.add('hidden');
+        }
+    }
+
     // Close categories panel if it's open
     const sidePanel = document.querySelector('.side-panel');
     if (sidePanel && sidePanel.classList.contains('active')) {
