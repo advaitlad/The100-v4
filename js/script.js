@@ -723,6 +723,21 @@ function toggleSidePanel() {
     if ((tutorialModal && !tutorialModal.classList.contains('hidden')) || 
         (profileModal && !profileModal.classList.contains('hidden')) ||
         (loginModal && !loginModal.classList.contains('hidden'))) {
+        
+        // Find the active modal
+        const activeModal = [tutorialModal, profileModal, loginModal].find(modal => 
+            modal && !modal.classList.contains('hidden')
+        );
+
+        // Add shake animation to active modal
+        if (activeModal) {
+            activeModal.classList.add('shake-animation');
+            // Remove the animation class after it completes
+            setTimeout(() => {
+                activeModal.classList.remove('shake-animation');
+            }, 500); // Match this to the animation duration
+        }
+
         // Show a small popup notification
         const popup = document.getElementById('popup');
         if (popup) {
