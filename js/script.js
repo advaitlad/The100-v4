@@ -740,7 +740,7 @@ function createCategoryItem(categoryKey, category, isLocked = false) {
             iconContent = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z"/></svg>';
             break;
         case 'netflix':
-            iconContent = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v20h-.382l-.06-.301L3 2h4zm7.982 20H19V2h-4l-3.493 17.467L7.982 22zM16 8.2l1.5-4.2h-1.5l-1.5 4.2V8l1.5-4h-1l-1.5 4v.2l1.5-3.2h-1L12.5 8v.2l1.5-2.2h-1L12 8v.2l1-1.2h-1l-1 3 2.5-7h3.5z"/></svg>';
+            iconContent = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 2v20h2v-7l2-2v9h2V11l2-2v13h2V7l2-2v17h2V3h-2l-2 2V2H13L11 4V2H9L7 4V2z"/></svg>';
             break;
         default:
             iconContent = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/></svg>';
