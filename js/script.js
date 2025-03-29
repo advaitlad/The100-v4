@@ -11,6 +11,7 @@ let guessedCountries = [];
 let guessInput, submitButton, chanceSpan, scoreSpan, guessesList;
 let gameOverDiv, finalScoreSpan, playAgainButton, tilesWrapper;
 let sidePanel, categoriesToggle, categoriesList, categorySearch;
+let profileToggle, loginModal, profileModal;
 
 let selectedCategoryIndex = -1;
 
@@ -35,6 +36,9 @@ function initializeDOMElements() {
     categoriesToggle = document.getElementById('categories-toggle');
     categoriesList = document.querySelector('.categories-list');
     categorySearch = document.getElementById('category-search');
+    profileToggle = document.getElementById('profile-toggle');
+    loginModal = document.getElementById('login-modal');
+    profileModal = document.getElementById('profile-modal');
 
     // Initialize game elements after DOM elements are available
     if (!tilesWrapper) {
@@ -1287,7 +1291,6 @@ function closeTutorialModal() {
 
 // Close profile modal function
 function closeProfileModal() {
-    const profileModal = document.getElementById('profile-modal');
     if (profileModal) {
         profileModal.classList.add('hidden');
     }
@@ -1301,7 +1304,6 @@ function closeProfileModal() {
 
 // Close login modal function
 function closeLoginModal() {
-    const loginModal = document.getElementById('login-modal');
     if (loginModal) {
         loginModal.classList.add('hidden');
     }

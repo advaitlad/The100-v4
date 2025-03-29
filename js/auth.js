@@ -45,6 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overlay) overlay.remove();
     });
 
+    // Function to handle escape key for login modal
+    const escapeKeyListener = (e) => {
+        if (e.key === 'Escape') {
+            closeLoginModal();
+        }
+    };
+
+    // Function to handle escape key for profile modal
+    const profileEscapeListener = (e) => {
+        if (e.key === 'Escape' && profileModal && !profileModal.classList.contains('hidden')) {
+            closeProfileModal();
+        }
+    };
+
     // Function to close login modal
     function closeLoginModal() {
         loginModal?.classList.add('hidden');
@@ -53,24 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove the escape key listener
         document.removeEventListener('keydown', escapeKeyListener);
     }
-
-    // Close login modal when X is clicked
-    closeLogin?.addEventListener('click', closeLoginModal);
-
-    // Function to handle escape key
-    function escapeKeyListener(e) {
-        if (e.key === 'Escape') {
-            closeLoginModal();
-        }
-    }
-
-    // Close profile modal
-    closeProfile?.addEventListener('click', () => {
-        profileModal?.classList.add('hidden');
-        // Remove overlay
-        const overlay = document.querySelector('.overlay');
-        if (overlay) overlay.remove();
-    });
 
     // Function to close profile modal
     function closeProfileModal() {
@@ -81,12 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.removeEventListener('keydown', profileEscapeListener);
     }
 
-    // Function to handle escape key for profile modal
-    function profileEscapeListener(e) {
-        if (e.key === 'Escape' && profileModal && !profileModal.classList.contains('hidden')) {
-            closeProfileModal();
-        }
-    }
+    // Close login modal when X is clicked
+    closeLogin?.addEventListener('click', closeLoginModal);
+
+    // Close profile modal
+    closeProfile?.addEventListener('click', closeProfileModal);
 
     // Function to show login modal
     function showLoginModal() {
